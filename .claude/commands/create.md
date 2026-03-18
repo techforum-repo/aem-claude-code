@@ -28,9 +28,11 @@ Detect the artifact type from the request and apply the appropriate creation app
 | frontend, React, clientlib, SPA | Frontend code in the correct frontend module |
 
 Before writing code:
-- Read nearby examples of the same artifact type to match existing patterns
-- Identify all modules touched and any required supporting changes
-- Ask one clarifying question if the type or scope is ambiguous
+1. **Find existing examples** — use Glob and Grep to locate 1-2 existing files of the same artifact type in the project (e.g. another Sling Model, another OSGi service, another HTL component). If none exist, use the closest artifact type as reference.
+2. **Extract the pattern** — from the example(s), note: package declaration, imports, annotations and their attributes, class/interface naming convention, injection style (`@ValueMapValue` vs `@Inject`), logging setup, and any project-specific base classes or interfaces.
+3. **Check for existing implementations** — search for a class or component that already does something similar before creating a new one.
+4. **Identify all modules touched** — list every module that needs a change (e.g. a new Sling Model also needs a service user in `ui.config` and may need a dialog in `ui.apps`).
+5. **Ask one clarifying question** if the type or scope is genuinely ambiguous — otherwise proceed.
 
 Requirements:
 - Follow existing package structure, annotation style, and naming conventions
