@@ -24,6 +24,12 @@ Detect the artifact type from the request and apply the appropriate creation app
 | CAConfig, context-aware config | `@Configuration` interface in `core` + config node in `ui.content` under `/conf/<project>/sling:configs/` |
 | Dispatcher, vhost, farm, rewrite | Dispatcher config files in `devops/dispatcher/` — apply `dispatcher` rule |
 | i18n, translation, dictionary | i18n JSON files in `ui.apps/<project>/i18n/` for each required language |
+| editable template, page template, wcm template | Editable template structure in `ui.content` under `/conf/<project>/settings/wcm/templates/` |
+| overlay, override /libs, sling overlay | Overlay in `ui.apps` mirroring the `/libs/` path — copy only files being changed |
+| integration test, it.tests | Integration test in `it.tests/src/main/java/` using Sling Testing Client |
+| UI test, ui.tests, Cypress, Selenium | UI test in `ui.tests/src/` reading environment from env vars |
+| event handler, EventHandler, OSGi event | OSGi EventHandler in `core` — or JobConsumer if work must be reliable/retryable |
+| Cloud Manager variable, CM env var, environment variable, secret | OSGi `.cfg.json` in `ui.config` using `$[env:VAR;default=]` or `$[secret:VAR]` syntax |
 | unit test, test | Unit tests in `core/src/test` |
 | frontend, React, clientlib, SPA | Frontend code in the correct frontend module |
 

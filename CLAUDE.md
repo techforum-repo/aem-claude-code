@@ -18,6 +18,10 @@ This repository contains an Adobe Experience Manager as a Cloud Service (AEMaaCS
   Distinct frontend modules with different integration patterns
 - `all/`
   Aggregation package that embeds deployable modules
+- `it.tests/`
+  Integration tests — run by Cloud Manager after deployment against a live AEM environment
+- `ui.tests/`
+  UI tests — run by Cloud Manager against the publish environment using browser automation
 - `devops/`
   Deployment, environment, and pipeline-related assets
 - `hooks/`

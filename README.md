@@ -45,6 +45,7 @@ Scoped instruction files applied automatically when Claude reads or edits files 
 | `content-fragments.md` | `ui.content/**/settings/dam/cfm/**/*.xml`, CF-related Java classes |
 | `caconfig.md` | `ui.content/**/sling:configs/**/*.xml`, CAConfig Java interfaces |
 | `i18n.md` | `ui.apps/**/i18n/**/*.json`, `ui.apps/**/i18n/**/*.xml` |
+| `integration-tests.md` | `it.tests/src/**/*.java`, `ui.tests/src/**/*.java`, `ui.tests/src/**/*.ts` |
 
 ---
 

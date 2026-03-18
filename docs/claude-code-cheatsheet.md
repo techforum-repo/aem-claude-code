@@ -121,6 +121,30 @@ Dispatcher vhost for mysite.com with SSL termination and caching rules
 /project:create
 i18n dictionary for the product card component in English and German
 ```
+```
+/project:create
+Editable template for a product landing page with header, content, and footer structure
+```
+```
+/project:create
+Overlay for /libs/cq/gui/components/coral/common/tabs to add a custom tab to the page properties dialog
+```
+```
+/project:create
+Integration test that verifies the product card component renders correctly on publish
+```
+```
+/project:create
+UI test using Cypress that checks an author can create and publish a product page
+```
+```
+/project:create
+OSGi EventHandler that listens for DAM asset ingestion events and triggers cache invalidation
+```
+```
+/project:create
+OSGi config for the product API service using Cloud Manager environment variable for the endpoint URL and a secret for the API key
+```
 
 ---
 
