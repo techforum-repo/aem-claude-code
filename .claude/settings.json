@@ -1,0 +1,54 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mvn *)",
+      "Bash(mvn clean*)",
+      "Bash(git log *)",
+      "Bash(git diff *)",
+      "Bash(git diff)",
+      "Bash(git status)",
+      "Bash(git status *)",
+      "Bash(git show *)",
+      "Bash(git branch)",
+      "Bash(git branch *)",
+      "Bash(npm *)"
+    ],
+    "ask": [
+      "Bash(git commit *)",
+      "Bash(git checkout *)",
+      "Bash(git switch *)",
+      "Bash(git reset *)",
+      "Bash(git stash *)"
+    ],
+    "deny": [
+      "Bash(rm -rf*)",
+      "Bash(curl *admin:admin*)",
+      "Bash(mvn deploy*)",
+      "Bash(git push --force*)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 .claude/hooks/guard-sensitive-files.py || python .claude/hooks/guard-sensitive-files.py"
+          }
+        ]
+      }
+    ],
+    "PostCompact": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 .claude/hooks/post-compact.py || python .claude/hooks/post-compact.py"
+          }
+        ]
+      }
+    ]
+  }
+}
