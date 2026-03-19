@@ -13,6 +13,7 @@ Apply these rules to servlets, filters, services, workflow steps, schedulers, an
 - Use `resourceResolverFactory.getServiceResourceResolver(...)` with a named subservice when repository access is required.
 - Keep service user mappings and ACL provisioning in `ui.config`; do not attempt to create them in Java code.
 - Never concatenate untrusted input into JCR-SQL2, XPath, LDAP, or similar query strings.
+- Protect against XSS: use `XSSAPI` (injected via `@Inject` or `slingRequest.adaptTo(XSSAPI.class)`) to encode output — use `encodeForHTML`, `encodeForHTMLAttr`, `encodeForJSString`, or `filterHTML` as appropriate for the output context. Never rely on manual string escaping.
 - Validate path-based input before passing it to repository lookup APIs.
 - Do not expose stack traces, internal repository paths, or sensitive details in responses or logs.
 - Prefer resource type servlet registration over path-based registration unless an existing repository pattern requires otherwise.
@@ -25,4 +26,5 @@ Apply these rules to servlets, filters, services, workflow steps, schedulers, an
 - unvalidated path input
 - path-based servlet exposure
 - sensitive data leakage in logs or responses
+- XSS: output not encoded with `XSSAPI` or wrong encode method used for the output context
 - hardcoded secrets or credentials
