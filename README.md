@@ -6,11 +6,21 @@ Reusable Claude Code configuration for an enterprise Adobe Experience Manager as
 
 ## Quick start
 
-1. Copy `CLAUDE.md` into the root of your AEM repository.
-2. Copy the `.claude/` folder into the root of your AEM repository.
-3. Adjust module names, build commands, and runmode names in `CLAUDE.md` to match your project.
-4. Verify `.claude/settings.json` permission rules match your team's workflow.
-5. Add `.claude/settings.local.json` to your `.gitignore` for personal permission overrides that should not be committed.
+**Copy files into your AEM project root:**
+
+```
+CLAUDE.md  →  <project-root>/CLAUDE.md
+.mcp.json  →  <project-root>/.mcp.json
+.claude/   →  <project-root>/.claude/
+```
+
+**Then customise for your project:**
+
+1. `CLAUDE.md` — update module names, Maven commands, AEM host/port, and package naming
+2. `.claude/settings.json` — set `AEM_HOST`, ports, and any additional Maven profiles to allow
+3. `.mcp.json` — swap GitHub for Bitbucket if needed; add Jira MCP if your team uses it
+4. Add `.claude/settings.local.json` to `.gitignore` for personal permission overrides
+5. Optionally commit `.claude/agent-memory/` to share accumulated agent knowledge across the team
 
 ---
 
@@ -131,12 +141,15 @@ Shell scripts executed at Claude Code lifecycle events. Registered in `settings.
 
 Included hooks:
 - **`guard-sensitive-files.py`** (`PreToolUse`) — blocks Claude from editing files matching credential patterns (`.env`, `*secret*`, `*keystore*`). Written in Python for cross-platform compatibility. Add patterns to `SENSITIVE_PATTERNS` to match your project's naming conventions.
+- **`post-format.py`** (`PostToolUse`) — after Claude writes or edits a Java file in `core/`, automatically runs `mvn spotless:apply -pl core` to keep formatting consistent. Requires the [Spotless Maven plugin](https://github.com/diffplug/spotless) in `core/pom.xml` — see `docs/claude-code-setup.md` for the configuration snippet. If your team uses a different formatter, replace the command inside `post-format.py`.
 - **`post-compact.py`** (`PostCompact`) — after context compaction in long sessions, prints a brief AEM rules reminder so Claude retains the most critical project conventions in the new context window.
 
 Supported events: `PreToolUse`, `PostToolUse`, `PostToolUseFailure`, `SessionStart`, `Stop`, and others. See `docs/claude-code-setup.md` for examples.
 
 ### `.claude/settings.json`
 Permission rules that control which shell commands Claude Code can run automatically vs. which require approval. Uses a three-tier model: `allow` / `ask` / `deny`.
+
+Also sets project-wide environment variables (`AEM_HOST`, `AEM_PORT_AUTHOR`, `AEM_PORT_PUBLISH`) used in build commands. Override in `.claude/settings.local.json` for your local environment.
 
 Adjust the lists to match your team's conventions. The defaults allow common Maven and git read commands, prompt for git write operations, and block destructive or credential-exposing operations.
 

@@ -102,9 +102,51 @@ If you prefer per-developer memory (each developer builds their own), add to `.g
 ```
 
 ### `.claude/hooks/`
-Shell scripts that run automatically at lifecycle events. This repository includes one hook:
+Shell scripts that run automatically at lifecycle events. This repository includes three hooks:
 
 - **`guard-sensitive-files.py`** (`PreToolUse`) — blocks Claude from editing files matching credential patterns (`.env`, `*secret*`, `*keystore*`, etc.). Written in Python for cross-platform compatibility (Windows, Linux, macOS). Exit code 2 stops the action and shows a message.
+- **`post-format.py`** (`PostToolUse`) — after Claude writes or edits a Java file in `core/`, automatically runs `mvn spotless:apply -pl core` to keep formatting consistent. Skips silently if Maven is not on PATH.
+
+#### Setting up Spotless in `core/pom.xml`
+
+`post-format.py` requires the Spotless Maven plugin to be configured in your `core/pom.xml`. Add this inside `<build><plugins>`:
+
+```xml
+<plugin>
+  <groupId>com.diffplug.spotless</groupId>
+  <artifactId>spotless-maven-plugin</artifactId>
+  <version>2.43.0</version>
+  <configuration>
+    <java>
+      <googleJavaFormat>
+        <version>1.19.2</version>
+        <style>GOOGLE</style>
+      </googleJavaFormat>
+    </java>
+  </configuration>
+</plugin>
+```
+
+Verify it works before relying on the hook:
+
+```bash
+mvn spotless:apply -pl core
+```
+
+**Using a different formatter:** If your team uses a different formatter, edit `.claude/hooks/post-format.py` and replace the `mvn spotless:apply -pl core -q` command with your own — for example:
+
+```python
+# Eclipse formatter
+["mvn", "formatter:format", "-pl", "core", "-q"]
+
+# Checkstyle (check only, no auto-fix)
+["mvn", "checkstyle:check", "-pl", "core", "-q"]
+
+# Custom script
+["bash", ".claude/hooks/format-java.sh", file_path]
+```
+
+If your project does not use any auto-formatter, remove the `PostToolUse` entry from `.claude/settings.json` — the other two hooks (`guard-sensitive-files.py`, `post-compact.py`) remain active independently.
 
 To add your own hooks, register them in `.claude/settings.json` under `"hooks"`:
 

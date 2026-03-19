@@ -1,4 +1,9 @@
 {
+  "env": {
+    "AEM_HOST": "localhost",
+    "AEM_PORT_AUTHOR": "4502",
+    "AEM_PORT_PUBLISH": "4503"
+  },
   "permissions": {
     "allow": [
       "Bash(mvn *)",
@@ -35,6 +40,17 @@
           {
             "type": "command",
             "command": "python3 .claude/hooks/guard-sensitive-files.py || python .claude/hooks/guard-sensitive-files.py"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 .claude/hooks/post-format.py || python .claude/hooks/post-format.py"
           }
         ]
       }
