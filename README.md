@@ -211,7 +211,13 @@ Edit `.claude/hooks/post-format.py` and replace the command list in the `subproc
 
 If your project does not use any auto-formatter, remove the `PostToolUse` hook entry from `.claude/settings.json` — the other two hooks remain active independently.
 
-- **`post-compact.py`** (`PostCompact`) — after context compaction in long sessions, prints a brief AEM rules reminder so Claude retains the most critical project conventions in the new context window.
+- **`post-tool-failure.py`** (`PostToolUseFailure`) — logs tool failures with context (command, file path, error) to stderr. Helps diagnose recurring Maven build failures, Spotless errors, or blocked file edits without having to scroll back through the session.
+
+- **`post-stop.py`** (`Stop`) — at the end of every session, prints a reminder to check `git status`, review the diff, and flush any non-obvious learnings to `.claude/agent-memory/` for team sharing.
+
+- **`post-compact.py`** (`PostCompact`) — when a session grows long, Claude Code compresses the conversation history to free up context window space. After compaction, Claude loses the detailed rule context injected earlier in the session. This hook fires immediately after compaction and prints a short set of critical AEM rules back into context.
+
+  The reminder is intentionally minimal — only rules where a single wrong edit causes a **production or security consequence** (admin resolver, resource leak, XSS, OakPAL failure, thread starvation). Style and convention rules are omitted to keep the reinjected context small. To customise, edit the `REMINDER` string in `post-compact.py`.
 
 Supported events: `PreToolUse`, `PostToolUse`, `PostToolUseFailure`, `SessionStart`, `Stop`, and others. See `docs/claude-code-setup.md` for examples.
 

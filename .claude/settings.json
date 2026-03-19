@@ -55,6 +55,17 @@
         ]
       }
     ],
+    "PostToolUseFailure": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 .claude/hooks/post-tool-failure.py || python .claude/hooks/post-tool-failure.py"
+          }
+        ]
+      }
+    ],
     "PostCompact": [
       {
         "matcher": "",
@@ -62,6 +73,17 @@
           {
             "type": "command",
             "command": "python3 .claude/hooks/post-compact.py || python .claude/hooks/post-compact.py"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 .claude/hooks/post-stop.py || python .claude/hooks/post-stop.py"
           }
         ]
       }

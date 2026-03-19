@@ -14,6 +14,8 @@ REMINDER = """
 - Place OSGi config in ui.config; keep ui.apps immutable
 - Use SLF4J parameterized logging only
 - Never call Thread.sleep() in servlets, jobs, schedulers, or workflow steps
+- For large child node iteration use JCR Node API (node.getNodes()) not Sling API (resource.listChildren())
+- Protect against XSS: use XSSAPI methods (encodeForHTML, encodeForHTMLAttr, encodeForJSString, filterHTML) — never manual string escaping
 =======================================================
 """
 

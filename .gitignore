@@ -1,0 +1,5 @@
+# Python cache
+.claude/hooks/__pycache__/
+
+# Personal Claude Code overrides
+.claude/settings.local.json
