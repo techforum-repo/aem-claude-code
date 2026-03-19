@@ -64,7 +64,7 @@ Five slim entry-point commands. Each routes to the right agents, skills, or crea
 
 | Command | What it does |
 |---|---|
-| `/project:review` | Full AEM review — spawns security, performance, Cloud Manager, and SonarCloud reviewer agents in parallel, then consolidates findings |
+| `/project:review` | Full AEM review — creates a native agent team with four specialist reviewer teammates (security, performance, Cloud Manager, SonarCloud), each in an isolated context, then consolidates findings |
 | `/project:create` | Smart creation — detects artifact type from your description and applies the right rules |
 | `/project:explain` | Explains a component end-to-end, or analyses Cloud Manager pipeline impact of current changes |
 | `/project:pr` | Drafts a PR summary with modules changed, risks, and test plan |
@@ -210,6 +210,8 @@ Edit `.claude/hooks/post-format.py` and replace the command list in the `subproc
 ```
 
 If your project does not use any auto-formatter, remove the `PostToolUse` hook entry from `.claude/settings.json` — the other two hooks remain active independently.
+
+- **`teammate-idle.py`** (`TeammateIdle`) — fires when a reviewer teammate is about to go idle. Checks if the teammate has produced a findings report (keywords: Blocking / Warning / Suggestion). If not, exits with code 2 to keep the teammate working until the report is complete.
 
 - **`post-tool-failure.py`** (`PostToolUseFailure`) — logs tool failures with context (command, file path, error) to stderr. Helps diagnose recurring Maven build failures, Spotless errors, or blocked file edits without having to scroll back through the session.
 

@@ -2,7 +2,8 @@
   "env": {
     "AEM_HOST": "localhost",
     "AEM_PORT_AUTHOR": "4502",
-    "AEM_PORT_PUBLISH": "4503"
+    "AEM_PORT_PUBLISH": "4503",
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
   },
   "permissions": {
     "allow": [
@@ -73,6 +74,17 @@
           {
             "type": "command",
             "command": "python3 .claude/hooks/post-compact.py || python .claude/hooks/post-compact.py"
+          }
+        ]
+      }
+    ],
+    "TeammateIdle": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 .claude/hooks/teammate-idle.py || python .claude/hooks/teammate-idle.py"
           }
         ]
       }
