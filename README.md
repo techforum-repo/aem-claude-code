@@ -141,7 +141,76 @@ Shell scripts executed at Claude Code lifecycle events. Registered in `settings.
 
 Included hooks:
 - **`guard-sensitive-files.py`** (`PreToolUse`) — blocks Claude from editing files matching credential patterns (`.env`, `*secret*`, `*keystore*`). Written in Python for cross-platform compatibility. Add patterns to `SENSITIVE_PATTERNS` to match your project's naming conventions.
-- **`post-format.py`** (`PostToolUse`) — after Claude writes or edits a Java file in `core/`, automatically runs `mvn spotless:apply -pl core` to keep formatting consistent. Requires the [Spotless Maven plugin](https://github.com/diffplug/spotless) in `core/pom.xml` — see `docs/claude-code-setup.md` for the configuration snippet. If your team uses a different formatter, replace the command inside `post-format.py`.
+- **`post-format.py`** (`PostToolUse`) — after Claude writes or edits a Java file in `core/`, automatically runs `mvn spotless:apply -pl core` to keep formatting consistent. Requires the [Spotless Maven plugin](https://github.com/diffplug/spotless) in `core/pom.xml` (see below). If your team uses a different formatter, see [Using a different formatter](#using-a-different-formatter).
+
+#### Setting up Spotless in `core/pom.xml`
+
+Add the following inside `<build><plugins>` in your `core/pom.xml`:
+
+```xml
+<plugin>
+  <groupId>com.diffplug.spotless</groupId>
+  <artifactId>spotless-maven-plugin</artifactId>
+  <version>2.43.0</version>
+  <configuration>
+    <java>
+      <googleJavaFormat>
+        <version>1.19.2</version>
+        <!-- GOOGLE = 2-space indent  |  AOSP = 4-space indent (common in enterprise AEM) -->
+        <style>GOOGLE</style>
+      </googleJavaFormat>
+    </java>
+  </configuration>
+  <executions>
+    <execution>
+      <goals><goal>check</goal></goals>
+      <phase>verify</phase>
+    </execution>
+  </executions>
+</plugin>
+```
+
+Verify it works before relying on the hook:
+
+```bash
+mvn spotless:apply -pl core
+mvn spotless:check -pl core
+```
+
+The `check` goal is wired to the `verify` phase so Cloud Manager will fail the build if unformatted code is pushed.
+
+#### Using a different formatter
+
+Edit `.claude/hooks/post-format.py` and replace the command list in the `subprocess.run(...)` call:
+
+| Formatter | Command list |
+|---|---|
+| Spotless (default) | `["mvn", "spotless:apply", "-pl", "core", "-q"]` |
+| Eclipse formatter plugin | `["mvn", "formatter:format", "-pl", "core", "-q"]` |
+| Checkstyle (check only, no auto-fix) | `["mvn", "checkstyle:check", "-pl", "core", "-q"]` |
+| Palantir Java Format via Spotless | Change `<googleJavaFormat>` to `<palantirJavaFormat>` in `pom.xml`, keep same command |
+| Custom shell script | `["bash", ".claude/hooks/format-java.sh", file_path]` |
+
+**Spotless with Eclipse formatter plugin (`com.googlecode.maven-java-formatter-plugin`):**
+
+```xml
+<plugin>
+  <groupId>com.googlecode.maven-java-formatter-plugin</groupId>
+  <artifactId>maven-java-formatter-plugin</artifactId>
+  <version>0.4</version>
+  <configuration>
+    <configFile>${project.basedir}/../eclipse-formatter.xml</configFile>
+  </configuration>
+</plugin>
+```
+
+```python
+# post-format.py — replace the subprocess.run command list with:
+["mvn", "formatter:format", "-pl", "core", "-q"]
+```
+
+If your project does not use any auto-formatter, remove the `PostToolUse` hook entry from `.claude/settings.json` — the other two hooks remain active independently.
+
 - **`post-compact.py`** (`PostCompact`) — after context compaction in long sessions, prints a brief AEM rules reminder so Claude retains the most critical project conventions in the new context window.
 
 Supported events: `PreToolUse`, `PostToolUse`, `PostToolUseFailure`, `SessionStart`, `Stop`, and others. See `docs/claude-code-setup.md` for examples.
