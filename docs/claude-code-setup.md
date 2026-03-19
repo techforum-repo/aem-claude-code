@@ -79,7 +79,27 @@ Scoped rule files applied automatically when Claude reads or edits matching file
 ### `.claude/commands/`
 Custom slash commands for repeatable tasks. Invoke them with `/project:` followed by the command name.
 
-> **Note:** `.claude/skills/` is the newer equivalent of `.claude/commands/` and supports additional frontmatter options (`context: fork` for subagent isolation, `agent:` to select a specific subagent type, supporting reference files). Both work identically for slash-command invocation. This repository uses `.claude/commands/` for broad compatibility.
+> **Commands vs Skills:** This repository uses both intentionally. Commands live in `.claude/commands/project/` and are invoked as `/project:<name>` — the subdirectory gives them a namespace that avoids conflicts with Claude Code built-ins. Skills live in `.claude/skills/` and are invoked as `/<name>` — they support `model:` overrides and `user-invocable: false` which commands do not. Commands orchestrate; skills do focused domain checks.
+
+### `.claude/agent-memory/`
+
+Agents with `memory: project` accumulate codebase knowledge across sessions and store it here. Two agents use this:
+
+- **`aem-inspector`** — learns your component patterns, data flows, and risks over time
+- **`aem-refactor`** — remembers naming conventions and structural decisions already applied
+
+**Commit this folder to share memory across the team** — one developer's deep component analysis benefits everyone. Add to your repository and commit:
+
+```bash
+git add .claude/agent-memory/
+git commit -m "Add accumulated agent memory"
+```
+
+If you prefer per-developer memory (each developer builds their own), add to `.gitignore`:
+
+```gitignore
+.claude/agent-memory/
+```
 
 ### `.claude/hooks/`
 Shell scripts that run automatically at lifecycle events. This repository includes one hook:

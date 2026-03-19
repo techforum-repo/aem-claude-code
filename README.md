@@ -118,7 +118,7 @@ Custom subagents with their own isolated context window, tool allowlist, and mod
 | Agent | When Claude uses it |
 |---|---|
 | `aem-inspector` | Whenever `/project:explain` is called with a component path or class name. Uses `model: opusplan` (Opus for planning, Sonnet for execution) and `memory: project` to accumulate component knowledge across sessions. |
-| `aem-refactor` | When asked to refactor, rename, or restructure AEM code. Runs in an isolated git worktree (`isolation: worktree`) — your branch is unchanged until you merge. |
+| `aem-refactor` | When asked to refactor, rename, or restructure AEM code. Runs in an isolated git worktree (`isolation: worktree`) — your branch is unchanged until you merge. Uses `memory: project` to remember naming conventions and structural decisions across sessions. |
 | `aem-security-reviewer` | Spawned in parallel by `/project:review` — security domain (admin resolver, query injection, path validation, hardcoded secrets). |
 | `aem-performance-reviewer` | Spawned in parallel by `/project:review` — performance domain (JCR queries, traversal, resolver lifecycle, threading). |
 | `aem-cloudmanager-reviewer` | Spawned in parallel by `/project:review` — Cloud Manager domain (OakPAL, embed order, Dispatcher SDK, deployment safety). |
