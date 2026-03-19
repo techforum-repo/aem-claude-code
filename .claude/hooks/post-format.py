@@ -29,9 +29,10 @@ def main():
     if "/core/src/" not in file_path and "\\core\\src\\" not in file_path:
         sys.exit(0)
 
-    mvn_cmd = shutil.which("mvn") or "/usr/local/bin/mvn" or "/opt/homebrew/bin/mvn"
-    if not shutil.which("mvn") and not os.path.isfile(mvn_cmd):
-        print(f"[post-format] mvn not found — skipping Spotless for {file_path}", file=sys.stderr)
+    # Works on Windows (mvn.cmd), Linux, and macOS as long as mvn is on PATH
+    mvn_cmd = shutil.which("mvn") or shutil.which("mvn.cmd")
+    if not mvn_cmd:
+        print(f"[post-format] mvn not found on PATH — skipping Spotless for {file_path}", file=sys.stderr)
         sys.exit(0)
 
     try:
