@@ -3,3 +3,6 @@
 
 # Personal Claude Code overrides
 .claude/settings.local.json
+
+# Agent memory — commit this directory to share team knowledge, or keep it gitignored for local-only accumulation
+# .claude/agent-memory/

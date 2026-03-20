@@ -8,6 +8,8 @@ import os
 import shutil
 import subprocess
 import sys
+import tempfile
+import time
 
 def main():
     try:
@@ -25,9 +27,26 @@ def main():
     if not file_path.endswith(".java"):
         sys.exit(0)
 
-    # Only act on core module files
-    if "/core/src/" not in file_path and "\\core\\src\\" not in file_path:
+    # Only act on core module files — normalize separators first to handle
+    # mixed paths on Windows (e.g. C:\project/core/src/Foo.java from Git Bash)
+    file_path_norm = file_path.replace("\\", "/")
+    if "/core/src/" not in file_path_norm:
         sys.exit(0)
+
+    # Debounce: skip if Spotless was already run in the last 30 seconds.
+    # Claude often edits multiple Java files in quick succession; running mvn
+    # for each edit would be slow. One run per 30-second window is enough.
+    debounce_file = os.path.join(tempfile.gettempdir(), "aem_spotless_last_run")
+    now = time.time()
+    try:
+        with open(debounce_file) as f:
+            last_run = float(f.read().strip())
+        if now - last_run < 30:
+            sys.exit(0)
+    except (OSError, ValueError):
+        pass
+    with open(debounce_file, "w") as f:
+        f.write(str(now))
 
     # Works on Windows (mvn.cmd), Linux, and macOS as long as mvn is on PATH
     mvn_cmd = shutil.which("mvn") or shutil.which("mvn.cmd")
@@ -40,6 +59,8 @@ def main():
             [mvn_cmd, "spotless:apply", "-pl", "core", "-q"],
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            errors="replace",
             timeout=60,
             env={**os.environ}
         )

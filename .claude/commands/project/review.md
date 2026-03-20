@@ -1,5 +1,5 @@
 ---
-description: Comprehensive AEM code review — spawns a five-teammate agent team (security, performance, Cloud Manager, SonarCloud, maintainability) in parallel, then consolidates all findings into one report
+description: Comprehensive AEM code review — spawns a six-teammate agent team (security, performance, Cloud Manager, SonarCloud, maintainability, accessibility) in parallel, then consolidates all findings into one report
 allowed-tools: Read, Grep, Glob, Bash(git diff *), Bash(git diff), Bash(git status), Bash(git log *), TeamCreate, SendMessage
 argument-hint: "[file or class path, or leave blank to review current branch diff]"
 disable-model-invocation: true
@@ -13,7 +13,7 @@ If no path is provided, run `git diff` to identify what changed in the current b
 
 **Use the agent teams feature** to create a team with exactly five teammates. Do not use subagents or the Agent tool — use `TeamCreate` to spawn real teammates that share a task list and can message each other directly.
 
-Create the team with these five teammates:
+Create the team with these six teammates:
 
 **teammate: security-reviewer**
 Prompt: Review $ARGUMENTS for AEM security issues. Focus on: admin resolver usage, query injection from user input, unvalidated path input, hardcoded secrets, servlet exposure, missing XSSAPI output encoding. Report every finding as Blocking / Warning / Suggestion with file and line reference.
@@ -30,6 +30,9 @@ Prompt: Review $ARGUMENTS for AEM code quality issues. Focus on: cyclomatic comp
 **teammate: maintainability-reviewer**
 Prompt: Review $ARGUMENTS for long-term maintainability. Focus on: (1) comment accuracy — are Javadoc and inline comments accurate and consistent with the actual code behaviour, or are they stale/misleading? (2) type design — are types well encapsulated with strong invariants, or do they expose unnecessary internals? (3) code simplification — is there unnecessary complexity or opportunities to simplify without changing behaviour? Report every finding as Blocking / Warning / Suggestion with file and line reference.
 
+**teammate: accessibility-reviewer**
+Prompt: Review $ARGUMENTS for accessibility issues. Focus on: missing or incorrect ARIA attributes (aria-label, aria-describedby, role), keyboard navigation and focus management, HTL output context for accessible markup, color contrast assumptions hardcoded in CSS/SCSS, missing alt text on images, form label associations, heading hierarchy, and WCM Core Component accessibility configuration. Report every finding as Blocking / Warning / Suggestion with file and line reference.
+
 Teammates should message each other when a finding in one domain has implications for another (e.g. security finding that is also a performance risk).
 
 ## Step 2 — Inline checks (run in this context while teammates are working)
@@ -43,7 +46,7 @@ While teammates are running, perform these checks in the lead context:
 
 ## Step 3 — Wait for all teammates to finish, then consolidate
 
-Once all five teammates have reported back, merge their findings with the inline checks into one report:
+Once all six teammates have reported back, merge their findings with the inline checks into one report:
 
 1. **Summary** — what was reviewed and scope
 2. **All findings** — consolidated and deduplicated, labelled **Blocking** / **Warning** / **Suggestion**, grouped by domain (Security / Performance / Cloud Manager / Quality / Maintainability / Structure)

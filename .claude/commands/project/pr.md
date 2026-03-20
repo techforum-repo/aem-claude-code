@@ -28,6 +28,11 @@ Run `git diff main...HEAD` and `git log main...HEAD --oneline` to gather the dif
 **If no issue or ticket reference is provided**:
 - Base the summary entirely on what is found in the git diff and commit history
 
+**If an MCP call fails or returns no result**:
+- Do not silently proceed with missing context
+- Print: "MCP unavailable — paste the ticket or issue description here so I can align the PR summary with the requirements."
+- Wait for the user to provide the description inline, then continue
+
 ## Step 2 — Draft the PR summary
 
 Base the summary on confirmed diff findings. Do not invent implementation details.

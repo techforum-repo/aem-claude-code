@@ -21,8 +21,12 @@
     ],
     "deny": [
       "Bash(rm -rf*)",
+      "Bash(rd /s *)",
+      "Bash(Remove-Item * -Recurse*)",
+      "Bash(del /f /s *)",
       "Bash(curl *admin:admin*)",
       "Bash(mvn deploy*)",
+      "Bash(mvn release:*)",
       "Bash(git push --force*)"
     ],
     "ask": [
@@ -41,6 +45,15 @@
           {
             "type": "command",
             "command": "python3 .claude/hooks/guard-sensitive-files.py || python .claude/hooks/guard-sensitive-files.py"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 .claude/hooks/guard-bash-deploy.py || python .claude/hooks/guard-bash-deploy.py"
           }
         ]
       }
@@ -89,6 +102,17 @@
           {
             "type": "command",
             "command": "python3 .claude/hooks/teammate-idle.py || python .claude/hooks/teammate-idle.py"
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 .claude/hooks/subagent-stopped.py || python .claude/hooks/subagent-stopped.py"
           }
         ]
       }

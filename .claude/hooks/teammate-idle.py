@@ -19,7 +19,11 @@ def main():
 
     review_keywords = ["blocking", "warning", "suggestion", "finding", "no issues"]
 
-    has_report = any(kw in last_message.lower() for kw in review_keywords)
+    # A real findings report needs both a keyword and enough content to be substantive.
+    # A very short last_message (< 150 chars) almost certainly isn't a complete report
+    # even if it accidentally contains a keyword like "no issues".
+    has_keyword = any(kw in last_message.lower() for kw in review_keywords)
+    has_report = has_keyword and len(last_message.strip()) >= 150
 
     if not has_report:
         print(

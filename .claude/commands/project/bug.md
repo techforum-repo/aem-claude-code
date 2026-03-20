@@ -22,6 +22,11 @@ Investigate: $ARGUMENTS
 **If only a freeform description is provided**:
 - Use that description as the basis for investigation
 
+**If an MCP call fails or returns no result**:
+- Do not silently proceed with missing context
+- Print: "MCP unavailable — paste the ticket description, reproduction steps, and expected vs actual behaviour here so I can investigate accurately."
+- Wait for the user to provide the details inline, then continue
+
 ## Step 2 — Investigate
 
 Start by reading files identified from the bug description. Run `git log --oneline -20` to check recent changes that may be related.
