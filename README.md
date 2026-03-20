@@ -137,7 +137,7 @@ Custom subagents with their own isolated context window, tool allowlist, and mod
 | `aem-inspector` | Whenever `/project:explain` is called with a component path or class name. Uses `model: opusplan` (Opus for planning, Sonnet for execution) and `memory: project` to accumulate component knowledge across sessions. |
 | `aem-refactor` | When asked to refactor, rename, or restructure AEM code. Runs in an isolated git worktree (`isolation: worktree`) — your branch is unchanged until you merge. Uses `memory: project` to remember naming conventions and structural decisions across sessions. |
 
-The five reviewer teammates spawned by `/project:review` are defined as inline prompts inside `review.md` — they run as native `TeamCreate` teammates, not as agent files.
+The six reviewer teammates spawned by `/project:review` are defined as inline prompts inside `review.md` — they run as native `TeamCreate` teammates, not as agent files.
 
 Agents differ from skills: a skill runs inline in your conversation; an agent gets a fresh isolated context, runs to completion, and returns a summary. Use agents for deep multi-file analysis tasks that would otherwise pollute the main conversation with file contents.
 
