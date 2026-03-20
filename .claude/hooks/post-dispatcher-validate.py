@@ -8,8 +8,9 @@ is looked up on PATH first, then at standard AEM SDK install locations.
 Skips gracefully if the validator is not found.
 
 Platform notes:
-  - Linux/macOS: binary is named 'validate' (shell script)
-  - Windows:     binary is named 'validator.exe'
+  - Linux/macOS: binary is named 'validator' (Go binary, no extension); hook expects a
+                 symlink at ~/aem-sdk/bin/validate pointing to it
+  - Windows:     binary is named 'validator.exe' (or 'validate.cmd')
 """
 import json
 import os
@@ -18,7 +19,7 @@ import subprocess
 import sys
 
 # Dispatcher config file extensions that trigger validation
-DISPATCHER_EXTENSIONS = (".any", ".conf", ".rules", ".vars", ".farm")
+DISPATCHER_EXTENSIONS = (".any", ".conf", ".rules", ".vars", ".farm", ".vhost")
 
 # Path fragments — file must be under one of these to trigger validation
 DISPATCHER_PATH_FRAGMENTS = (
@@ -46,17 +47,25 @@ def find_validator():
     """
     is_windows = sys.platform == "win32"
 
-    # Check PATH
-    for name in (["validator.exe"] if is_windows else ["validate"]):
+    # Check PATH — Adobe ships the binary as 'validator' on Linux/macOS (Go binary)
+    # and also as a 'validate' shell-script wrapper in older SDK versions.
+    for name in (["validator.exe"] if is_windows else ["validate", "validator"]):
         found = shutil.which(name)
         if found:
             return found
 
-    # Standard SDK fallback location (if not on PATH)
+    # Standard SDK fallback locations (if not on PATH).
+    # Covers both the legacy dispatcher/bin/ layout and the current flat bin/ layout.
+    # ~/aem-sdk/bin/validate is the recommended symlink target (created manually or by install).
     unix_candidates = [
+        os.path.expanduser("~/aem-sdk/bin/validate"),
+        os.path.expanduser("~/aem-sdk/bin/validator"),
         os.path.expanduser("~/aem-sdk/dispatcher/bin/validate"),
+        os.path.expanduser("~/aem-sdk/dispatcher/bin/validator"),
     ]
     win_candidates = [
+        os.path.expanduser("~/aem-sdk/bin/validator.exe"),
+        os.path.expanduser("~/aem-sdk/bin/validate.cmd"),
         os.path.expanduser("~/aem-sdk/dispatcher/bin/validator.exe"),
     ]
 
@@ -103,9 +112,10 @@ def main():
     if not validator:
         print(
             f"[post-dispatcher-validate] AEM Dispatcher SDK validator not found — skipping.\n"
-            "Install the Dispatcher Tools from the AEM SDK and ensure the binary is on PATH.\n"
-            "  Linux/macOS: ~/aem-sdk/dispatcher/bin/validate\n"
-            "  Windows:     ~/aem-sdk/dispatcher/bin/validator.exe",
+            "Install the Dispatcher Tools from the AEM SDK zip, then symlink the binary:\n"
+            "  Linux/macOS: ln -sf ~/aem-sdk-*/dispatcher-sdk-*/bin/validator ~/aem-sdk/bin/validate\n"
+            "  Windows:     ~/aem-sdk/bin/validator.exe  or  ~/aem-sdk/bin/validate.cmd\n"
+            "Note: validate.cmd and validator.exe are Windows-only and will not run on Linux.",
             file=sys.stderr,
         )
         sys.exit(0)
@@ -120,10 +130,11 @@ def main():
         sys.exit(0)
 
     try:
-        # The validator is invoked as: validate <path-to-dispatcher-src>
-        # where dispatcher-src is the directory containing conf.dispatcher.d/
+        # The validator is invoked as: validate full <path-to-dispatcher-src>
+        # 'full' validates both httpd and dispatcher configuration files.
+        # dispatcher-src is the directory containing conf.dispatcher.d/
         result = subprocess.run(
-            [validator, dispatcher_src],
+            [validator, "full", dispatcher_src],
             capture_output=True,
             text=True,
             encoding="utf-8",
@@ -132,7 +143,7 @@ def main():
             env={**os.environ},
         )
         if result.returncode == 0:
-            print(f"[post-dispatcher-validate] Validation passed for {file_path}")
+            print(f"[post-dispatcher-validate] Validation passed for {file_path}", file=sys.stderr)
         else:
             output = (result.stdout + result.stderr).strip()
             print(

@@ -11,7 +11,7 @@ If no path is provided, run `git diff` to identify what changed in the current b
 
 ## Step 1 — Create a native agent team
 
-**Use the agent teams feature** to create a team with exactly five teammates. Do not use subagents or the Agent tool — use `TeamCreate` to spawn real teammates that share a task list and can message each other directly.
+**Use the agent teams feature** to create a team with exactly six teammates. Do not use subagents or the Agent tool — use `TeamCreate` to spawn real teammates that share a task list and can message each other directly.
 
 Create the team with these six teammates:
 
@@ -49,7 +49,7 @@ While teammates are running, perform these checks in the lead context:
 Once all six teammates have reported back, merge their findings with the inline checks into one report:
 
 1. **Summary** — what was reviewed and scope
-2. **All findings** — consolidated and deduplicated, labelled **Blocking** / **Warning** / **Suggestion**, grouped by domain (Security / Performance / Cloud Manager / Quality / Maintainability / Structure)
+2. **All findings** — consolidated and deduplicated, labelled **Blocking** / **Warning** / **Suggestion**, grouped by domain (Security / Performance / Cloud Manager / Quality / Maintainability / Accessibility)
 3. **Recommended fixes** — priority order, Blocking items first
 
 Clean up the team after the report is delivered.

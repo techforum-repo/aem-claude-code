@@ -44,7 +44,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 .claude/hooks/guard-sensitive-files.py || python .claude/hooks/guard-sensitive-files.py"
+            "command": "cd \"$(git rev-parse --show-toplevel)\" && (python3 .claude/hooks/guard-sensitive-files.py || python .claude/hooks/guard-sensitive-files.py)"
           }
         ]
       },
@@ -53,7 +53,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 .claude/hooks/guard-bash-deploy.py || python .claude/hooks/guard-bash-deploy.py"
+            "command": "cd \"$(git rev-parse --show-toplevel)\" && (python3 .claude/hooks/guard-bash-deploy.py || python .claude/hooks/guard-bash-deploy.py)"
           }
         ]
       }
@@ -64,11 +64,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 .claude/hooks/post-format.py || python .claude/hooks/post-format.py"
+            "command": "cd \"$(git rev-parse --show-toplevel)\" && (python3 .claude/hooks/post-format.py || python .claude/hooks/post-format.py)"
           },
           {
             "type": "command",
-            "command": "python3 .claude/hooks/post-dispatcher-validate.py || python .claude/hooks/post-dispatcher-validate.py"
+            "command": "cd \"$(git rev-parse --show-toplevel)\" && (python3 .claude/hooks/post-dispatcher-validate.py || python .claude/hooks/post-dispatcher-validate.py)"
           }
         ]
       }
@@ -79,7 +79,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 .claude/hooks/post-tool-failure.py || python .claude/hooks/post-tool-failure.py"
+            "command": "cd \"$(git rev-parse --show-toplevel)\" && (python3 .claude/hooks/post-tool-failure.py || python .claude/hooks/post-tool-failure.py)"
           }
         ]
       }
@@ -90,7 +90,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 .claude/hooks/post-compact.py || python .claude/hooks/post-compact.py"
+            "command": "cd \"$(git rev-parse --show-toplevel)\" && (python3 .claude/hooks/post-compact.py || python .claude/hooks/post-compact.py)"
           }
         ]
       }
@@ -101,7 +101,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 .claude/hooks/teammate-idle.py || python .claude/hooks/teammate-idle.py"
+            "command": "cd \"$(git rev-parse --show-toplevel)\" && (python3 .claude/hooks/teammate-idle.py || python .claude/hooks/teammate-idle.py)"
           }
         ]
       }
@@ -112,7 +112,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 .claude/hooks/subagent-stopped.py || python .claude/hooks/subagent-stopped.py"
+            "command": "cd \"$(git rev-parse --show-toplevel)\" && (python3 .claude/hooks/subagent-stopped.py || python .claude/hooks/subagent-stopped.py)"
           }
         ]
       }
@@ -123,7 +123,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 .claude/hooks/post-stop.py || python .claude/hooks/post-stop.py"
+            "command": "cd \"$(git rev-parse --show-toplevel)\" && (python3 .claude/hooks/post-stop.py || python .claude/hooks/post-stop.py)"
           }
         ]
       }

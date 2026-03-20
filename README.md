@@ -55,15 +55,14 @@ Scoped instruction files applied automatically when Claude reads or edits files 
 | `frontend-base.md` | `ui.frontend/**/*.{js,ts,css,scss}` |
 | `frontend-react.md` | `ui.frontend.react/**/*.{js,ts,css,scss}` |
 | `frontend-spa.md` | `ui.frontend.spa/**/*.{js,ts,css,scss}` |
-| `devops.md` | `devops/**/*` |
-| `dispatcher.md` | `devops/**/*.{conf,any,vhost,farm}` |
-| `hooks.md` | `hooks/**/*` |
+| `dispatcher.md` | `dispatcher/src/**/*.{conf,any,vhost,farm}`, `ui.content/**/etc/map*/**` |
 | `oak-index.md` | `ui.apps/**/oak:index/**/*.xml` |
 | `content-fragments.md` | `ui.content/**/settings/dam/cfm/**/*.xml`, CF-related Java classes |
 | `caconfig.md` | `ui.content/**/sling:configs/**/*.xml`, CAConfig Java interfaces |
 | `i18n.md` | `ui.apps/**/i18n/**/*.json`, `ui.apps/**/i18n/**/*.xml` |
-| `integration-tests.md` | `it.tests/src/**/*.java`, `ui.tests/src/**/*.java`, `ui.tests/src/**/*.ts` |
+| `integration-tests.md` | `it.tests/src/**/*.java`, `ui.tests/src/**/*.java`, `ui.tests/src/**/*.{ts,js}` |
 | `accessibility.md` | `ui.apps/**/*.{html,xml}`, `ui.frontend*/**/*.{js,ts,jsx,tsx}` |
+| `wcm-core-components.md` | `ui.apps/**/.content.xml`, `ui.content/**/policies/**`, `ui.content/**/templates/**`, `pom.xml` |
 
 ---
 
@@ -72,18 +71,18 @@ Five slim entry-point commands. Each routes to the right agents, skills, or crea
 
 | Command | What it does |
 |---|---|
-| `/project:review` | Full AEM review — creates a native agent team with five specialist reviewer teammates (security, performance, Cloud Manager, SonarCloud, maintainability), each in an isolated context, then consolidates findings |
+| `/project:review` | Full AEM review — creates a native agent team with six specialist reviewer teammates (security, performance, Cloud Manager, SonarCloud, maintainability, accessibility), each in an isolated context, then consolidates findings |
 | `/project:create` | Smart creation — detects artifact type from your description and applies the right rules |
 | `/project:explain` | Explains a component end-to-end, or analyses Cloud Manager pipeline impact of current changes |
-| `/project:pr` | Drafts a PR summary with modules changed, risks, and test plan |
-| `/project:bug` | Investigates a bug by tracing the AEM request path |
+| `/project:pr` | Drafts a PR summary with modules changed, risks, and test plan. If MCP is unavailable, prompts for ticket description inline rather than silently proceeding without context. |
+| `/project:bug` | Investigates a bug by tracing the AEM request path. If MCP is unavailable, prompts for reproduction steps inline. |
 
 #### How to invoke
 
 ```
 /project:review
 ```
-*(runs `git diff`, creates a native agent team with five specialist reviewers in parallel, merges all findings into one report)*
+*(runs `git diff`, creates a native agent team with six specialist reviewers in parallel, merges all findings into one report)*
 
 ```
 /project:review core/src/main/java/com/example/models/ProductModel.java
@@ -148,20 +147,39 @@ Shell scripts executed at Claude Code lifecycle events. Registered in `settings.
 > **Prerequisite:** All hooks are Python scripts and require **Python 3** on PATH. Verify with `python3 --version`. Python 3 is pre-installed on macOS and most Linux distributions. On Windows, install from [python.org](https://www.python.org/downloads/) and ensure it is added to PATH during setup.
 
 Included hooks:
-- **`guard-sensitive-files.py`** (`PreToolUse`) — blocks Claude from editing files matching credential patterns (`.env`, `*secret*`, `*keystore*`). Written in Python for cross-platform compatibility. Add patterns to `SENSITIVE_PATTERNS` to match your project's naming conventions.
-- **`post-format.py`** (`PostToolUse`) — after Claude writes or edits a Java file in `core/`, automatically runs `mvn spotless:apply -pl core` to keep formatting consistent. Requires the [Spotless Maven plugin](https://github.com/diffplug/spotless) in `core/pom.xml` (see below). If your team uses a different formatter, see [Using a different formatter](#using-a-different-formatter).
+- **`guard-sensitive-files.py`** (`PreToolUse` — Write/Edit) — blocks Claude from editing files matching credential patterns (`.env`, `*secret*`, `*keystore*`). Add patterns to `SENSITIVE_PATTERNS` to match your project's naming conventions.
 
-- **`post-dispatcher-validate.py`** (`PostToolUse`) — after Claude writes or edits a Dispatcher config file (`.any`, `.conf`, `.rules`, `.vars`, `.farm` under `conf.dispatcher.d/` or `conf.d/`), automatically runs the [AEM Dispatcher SDK validator](https://experienceleague.adobe.com/docs/experience-manager-learn/cloud-service/local-development-environment-set-up/dispatcher-tools.html) to catch config errors immediately. Skips gracefully if the SDK validator is not installed.
+- **`guard-bash-deploy.py`** (`PreToolUse` — Bash) — blocks Maven autoInstall commands targeting non-localhost AEM instances. Prevents Claude from accidentally deploying to shared dev, staging, or production environments. Parses `-Daem.host=` from the command; if the value is not `localhost` or `127.0.0.1`, the command is blocked and echoed back so the developer can run it manually.
+
+- **`post-format.py`** (`PostToolUse`) — after Claude writes or edits a Java file in `core/`, automatically runs `mvn spotless:apply -pl core` to keep formatting consistent. Includes a **30-second debounce** — if Claude edits multiple Java files in quick succession, Spotless only runs once per 30-second window instead of once per file. Requires the [Spotless Maven plugin](https://github.com/diffplug/spotless) in `core/pom.xml` (see below). If your team uses a different formatter, see [Using a different formatter](#using-a-different-formatter).
+
+- **`post-dispatcher-validate.py`** (`PostToolUse`) — after Claude writes or edits a Dispatcher config file (`.any`, `.conf`, `.rules`, `.vars`, `.farm`, `.vhost` under `conf.dispatcher.d/` or `conf.d/`), automatically runs the [AEM Dispatcher SDK validator](https://experienceleague.adobe.com/docs/experience-manager-learn/cloud-service/local-development-environment-set-up/dispatcher-tools.html) to catch config errors immediately. Skips gracefully if the SDK validator is not installed.
 
   **Where to install the validator:**
-  Download the Dispatcher Tools zip from the [AEM SDK](https://experience.adobe.com/#/downloads) and extract it. Either add the `bin/` directory to your PATH, or place the extracted folder at the standard fallback location:
+  Download the AEM SDK zip from [Adobe Software Distribution](https://experience.adobe.com/#/downloads). Inside you will find `aem-sdk-dispatcher-tools-*-unix.sh` (Linux/macOS) or `aem-sdk-dispatcher-tools-*-windows.zip` (Windows).
 
-  | Platform | Binary name | Fallback location |
+  | Platform | Binary name | Expected location |
   |---|---|---|
-  | Linux / macOS | `validate` | `~/aem-sdk/dispatcher/bin/validate` |
-  | Windows | `validator.exe` | `~/aem-sdk/dispatcher/bin/validator.exe` |
+  | Linux / macOS | `validator` (Go binary, no extension) | `~/aem-sdk/bin/validate` (symlink) |
+  | Windows | `validator.exe` or `validate.cmd` | `%USERPROFILE%\aem-sdk\bin\validator.exe` |
 
-  Keep the SDK outside the project so it is not committed to source control. On Windows, ensure the path contains no spaces or special characters.
+  **Linux/macOS one-time setup** (run from the folder where you downloaded the SDK):
+  ```bash
+  chmod +x aem-sdk-dispatcher-tools-*-unix.sh && ./aem-sdk-dispatcher-tools-*-unix.sh
+  mkdir -p ~/aem-sdk/bin
+  ln -sf ~/aem-sdk-*/dispatcher-sdk-*/bin/validator ~/aem-sdk/bin/validate
+  ```
+
+  **Windows one-time setup:**
+  ```powershell
+  # Extract aem-sdk-dispatcher-tools-*-windows.zip
+  # Copy the contents of dispatcher-sdk-*\bin\ into %USERPROFILE%\aem-sdk\bin\
+  # Ensure validator.exe (or validate.cmd) is at %USERPROFILE%\aem-sdk\bin\validator.exe
+  ```
+
+  > **Note:** `validator.exe` and `validate.cmd` are Windows-only and will not run on Linux/macOS.
+
+  Keep the SDK outside the project so it is not committed to source control.
 
 #### Setting up Spotless in `core/pom.xml`
 
@@ -231,7 +249,9 @@ Edit `.claude/hooks/post-format.py` and replace the command list in the `subproc
 
 If your project does not use any auto-formatter, remove the `PostToolUse` hook entry from `.claude/settings.json` — the other two hooks remain active independently.
 
-- **`teammate-idle.py`** (`TeammateIdle`) — fires when a reviewer teammate is about to go idle. Checks if the teammate has produced a findings report (keywords: Blocking / Warning / Suggestion). If not, exits with code 2 to keep the teammate working until the report is complete.
+- **`teammate-idle.py`** (`TeammateIdle`) — fires when a reviewer teammate is about to go idle. Checks if the teammate has produced a findings report: requires both a keyword (Blocking / Warning / Suggestion / Finding / No issues) **and** a minimum of 150 characters, to prevent a one-liner from being mistaken for a complete report. If not, exits with code 2 to keep the teammate working.
+
+- **`subagent-stopped.py`** (`SubagentStop`) — fires when a reviewer teammate stops unexpectedly before completing its report. Prints a visible warning naming the missing domain and exits with code 2 to restart the teammate. Only fires for the six known reviewer teammates — other subagents are ignored.
 
 - **`post-tool-failure.py`** (`PostToolUseFailure`) — logs tool failures with context (command, file path, error) to stderr. Helps diagnose recurring Maven build failures, Spotless errors, or blocked file edits without having to scroll back through the session.
 
@@ -249,6 +269,18 @@ Permission rules that control which shell commands Claude Code can run automatic
 Also sets project-wide environment variables (`AEM_HOST`, `AEM_PORT_AUTHOR`, `AEM_PORT_PUBLISH`) used in build commands. Override in `.claude/settings.local.json` for your local environment.
 
 Adjust the lists to match your team's conventions. The defaults allow common Maven and git read commands, prompt for git write operations, and block destructive or credential-exposing operations.
+
+**Deny list covers:**
+- `rm -rf*`, `rd /s *`, `Remove-Item * -Recurse*`, `del /f /s *` — destructive deletions (Unix and Windows)
+- `curl *admin:admin*` — default AEM credential exposure
+- `mvn deploy*`, `mvn release:*` — artifact publishing
+- `git push --force*` — destructive remote rewrite
+
+**Hook CWD note:** All hook commands are prefixed with `cd "$(git rev-parse --show-toplevel)"` so they always run from the project root, regardless of which directory Claude navigated to during the session. If you add a custom hook, follow the same pattern:
+
+```json
+"command": "cd \"$(git rev-parse --show-toplevel)\" && (python3 .claude/hooks/my-hook.py || python .claude/hooks/my-hook.py)"
+```
 
 > **Commands vs Skills:** Both are used in this repo and serve different purposes. **Commands** (`.claude/commands/project/`) are orchestration entry points invoked as `/project:<name>` (e.g. `/project:review`) — they coordinate agents and multi-step workflows. **Skills** (`.claude/skills/`) are focused, reusable domain tools invoked directly as `/<name>` (e.g. `/aem-security`) and support model overrides and auto-loading via `user-invocable: false`.
 
@@ -454,7 +486,7 @@ claude mcp add --scope local my-server -- npx -y some-mcp-package
 | **`isolation: worktree`** | `aem-refactor` agent — refactoring runs in an isolated git copy, branch is safe until merged |
 | **`memory: project`** | `aem-inspector` agent — accumulates component knowledge across sessions in `.claude/agent-memory/` |
 | **`user-invocable: false`** | `aem-project-conventions` skill — always-loaded team conventions applied silently on every task |
-| **Agent teams** | `review.md` uses `TeamCreate` to spawn 5 native reviewer teammates in parallel (security, performance, Cloud Manager, SonarCloud, maintainability), each with its own isolated context, then merges findings |
+| **Agent teams** | `review.md` uses `TeamCreate` to spawn 6 native reviewer teammates in parallel (security, performance, Cloud Manager, SonarCloud, maintainability, accessibility), each with its own isolated context, then merges findings |
 | **`/batch`** | Documented in cheatsheet — bulk convention fixes, null-check additions, log statement migrations |
 | **`/loop`** | Documented in cheatsheet — Cloud Manager pipeline polling, test failure watching |
 | **Plan mode** | Documented in cheatsheet — read-only exploration before large refactors or filter changes |
@@ -515,13 +547,13 @@ Review `$ARGUMENTS` for accessibility issues...
 Add a row to the routing table in `create.md` to handle new artifact types.
 
 ### Add a hook
-Write a Python script in `.claude/hooks/`. Register it in `.claude/settings.json`:
+Write a Python script in `.claude/hooks/`. Register it in `.claude/settings.json`. Always prefix the command with `cd "$(git rev-parse --show-toplevel)" &&` so the hook runs from the project root even if Claude has changed directories during the session:
 
 ```json
 "PostToolUse": [
   {
     "matcher": "Write|Edit",
-    "hooks": [{ "type": "command", "command": "python3 .claude/hooks/my-hook.py || python .claude/hooks/my-hook.py" }]
+    "hooks": [{ "type": "command", "command": "cd \"$(git rev-parse --show-toplevel)\" && (python3 .claude/hooks/my-hook.py || python .claude/hooks/my-hook.py)" }]
   }
 ]
 ```
@@ -548,8 +580,7 @@ Create `.mcp.json` at the repository root. All team members pick it up automatic
 Ideas and opportunities not yet implemented — ready to pick up:
 
 ### Skills
-- **`aem-accessibility/SKILL.md`** — On-demand `/aem-accessibility` skill for explicit WCAG 2.1 audits. The `accessibility.md` rule already auto-applies when editing HTL, dialogs, and frontend files; this skill would add a targeted slash command for auditing existing components without editing them.
-- **`aem-multisite/SKILL.md`** — Multi-site Manager, language copy, and Live Copy inheritance chain rules
+- **`aem-accessibility/SKILL.md`** — On-demand `/aem-accessibility` skill for explicit WCAG 2.1 audits. The `accessibility.md` rule already auto-applies when editing HTL, dialogs, and frontend files, and accessibility is now a reviewer in `/project:review`; this skill would add a standalone targeted slash command.
 
 ### MCP servers
 - **AEM MCP server (Adobe)** — Adobe is developing an official MCP server for AEM that would let Claude query the JCR, inspect content structures, and trigger replication directly from the conversation. Once available, this would replace the current `AEM_HOST`/`AEM_PORT` env var approach for live instance interactions.
