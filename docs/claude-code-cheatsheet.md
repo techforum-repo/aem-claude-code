@@ -3,7 +3,7 @@
 Five commands cover everything. Skills can be chained or run standalone.
 
 **Commands** (invoked as `/project:command-name`):
-- `/project:review` — comprehensive review — creates a native agent team with four specialist reviewers (security, performance, Cloud Manager, SonarCloud) running in parallel, then consolidates findings
+- `/project:review` — comprehensive review — creates a native agent team with five specialist reviewers (security, performance, Cloud Manager, SonarCloud, maintainability) running in parallel, then consolidates findings
 - `/project:create` — any AEM artifact, detects type automatically
 - `/project:explain` — component walkthrough or pipeline impact
 - `/project:pr` — PR summary with risks and test plan
@@ -27,7 +27,7 @@ Rules in `.claude/rules/` activate automatically when Claude reads or edits matc
 ```
 /project:review
 ```
-*(runs `git diff`, spawns four reviewer agents in parallel — security, performance, Cloud Manager, SonarCloud — then merges all findings into one report)*
+*(runs `git diff`, creates a native agent team with five specialist reviewers in parallel — security, performance, Cloud Manager, SonarCloud, maintainability — then merges all findings into one report)*
 
 ### Review specific file(s)
 ```
@@ -253,6 +253,36 @@ Review this file for null safety, exception handling, deeply nested logic, and t
 Review this change and tell me what unit tests or integration tests are missing:
 [file or folder path]
 ```
+
+### pr-review-toolkit agents (auto-triggered, no command needed)
+
+These agents fire automatically when you ask naturally — no slash command required:
+
+**Silent failure detection**
+```
+Check if the error handling in [file path] has any silent failures or swallowed exceptions
+```
+
+**Test coverage analysis**
+```
+Review the test coverage for [file path] — are edge cases and null inputs covered?
+```
+
+**Comment accuracy**
+```
+Check if the Javadoc comments in [file path] are accurate and up to date
+```
+
+**Type design review**
+```
+Review the type design of [class name] — are invariants well expressed and encapsulation strong?
+```
+
+**Full PR toolkit review**
+```
+/pr-review-toolkit:review-pr
+```
+*(runs all six toolkit agents — complements `/project:review` which focuses on AEM-specific concerns)*
 
 ---
 

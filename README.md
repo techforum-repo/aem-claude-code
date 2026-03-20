@@ -17,10 +17,17 @@ CLAUDE.md  →  <project-root>/CLAUDE.md
 **Then customise for your project:**
 
 1. `CLAUDE.md` — update module names, Maven commands, AEM host/port, and package naming
-2. `.claude/settings.json` — set `AEM_HOST`, ports, and any additional Maven profiles to allow
-3. `.mcp.json` — swap GitHub for Bitbucket if needed; add Jira MCP if your team uses it
-4. Add `.claude/settings.local.json` to `.gitignore` for personal permission overrides
-5. Optionally commit `.claude/agent-memory/` to share accumulated agent knowledge across the team
+2. `CLAUDE.md` — update the **Java version** section if your project is not on Java 21 (also update `.claude/rules/core-java.md`)
+3. `.claude/settings.json` — set `AEM_HOST`, ports, and any additional Maven profiles to allow
+4. `.claude/skills/aem-project-conventions/SKILL.md` — replace `com.example` with your org/project package names; update OSGi config path with your project name — this is the most impactful customisation for code generation quality
+5. `.mcp.json` — swap GitHub for Bitbucket if needed; add Jira MCP if your team uses it
+6. Add `.claude/settings.local.json` to `.gitignore` for personal permission overrides
+7. Optionally commit `.claude/agent-memory/` to share accumulated agent knowledge across the team
+
+**Prerequisites (install once per developer machine):**
+- **Python 3** — required for all hooks (`python3 --version` to verify; pre-installed on macOS/Linux; [download for Windows](https://www.python.org/downloads/))
+- **jdtls** — Java LSP for real-time diagnostics (see [LSP setup](#lsp-code-intelligence))
+- **typescript-language-server** — TypeScript LSP: `npm install -g typescript-language-server typescript`
 
 ---
 
@@ -64,7 +71,7 @@ Five slim entry-point commands. Each routes to the right agents, skills, or crea
 
 | Command | What it does |
 |---|---|
-| `/project:review` | Full AEM review — creates a native agent team with four specialist reviewer teammates (security, performance, Cloud Manager, SonarCloud), each in an isolated context, then consolidates findings |
+| `/project:review` | Full AEM review — creates a native agent team with five specialist reviewer teammates (security, performance, Cloud Manager, SonarCloud, maintainability), each in an isolated context, then consolidates findings |
 | `/project:create` | Smart creation — detects artifact type from your description and applies the right rules |
 | `/project:explain` | Explains a component end-to-end, or analyses Cloud Manager pipeline impact of current changes |
 | `/project:pr` | Drafts a PR summary with modules changed, risks, and test plan |
@@ -75,7 +82,7 @@ Five slim entry-point commands. Each routes to the right agents, skills, or crea
 ```
 /project:review
 ```
-*(runs `git diff`, spawns four reviewer agents in parallel, merges all findings into one report)*
+*(runs `git diff`, creates a native agent team with five specialist reviewers in parallel, merges all findings into one report)*
 
 ```
 /project:review core/src/main/java/com/example/models/ProductModel.java
@@ -331,14 +338,21 @@ $env:PATH += ";$env:LOCALAPPDATA\jdtls\bin"
 npm install -g typescript-language-server typescript
 ```
 
+### Enable LSP tools
+
+`settings.json` already includes `"ENABLE_LSP_TOOL": "1"` in the `env` block — this is required to activate the LSP tool calls in Claude. No manual change needed if you copied `settings.json` from this repo.
+
 ### Install the plugins
 
-The plugins are pre-enabled in `settings.json`. On first session Claude Code will prompt you to install them, or install manually inside a Claude Code session:
+Three plugins are pre-enabled in `settings.json`. On first session Claude Code will prompt you to install them, or install manually inside a Claude Code session:
 
 ```
 /plugin install jdtls-lsp@claude-plugins-official
 /plugin install typescript-lsp@claude-plugins-official
+/plugin install pr-review-toolkit@claude-plugins-official
 ```
+
+The `pr-review-toolkit` adds six general-purpose review agents (comment quality, test coverage, silent failures, type design, general code review, complexity). These complement `/project:review` which focuses on AEM-specific concerns — both run independently.
 
 Restart the Claude Code session after installing — no `/reload-plugins` needed when starting fresh. Check `/plugin` → **Errors** tab if a language server binary is not found on PATH.
 
@@ -425,8 +439,7 @@ claude mcp add --scope local my-server -- npx -y some-mcp-package
 | **`isolation: worktree`** | `aem-refactor` agent — refactoring runs in an isolated git copy, branch is safe until merged |
 | **`memory: project`** | `aem-inspector` agent — accumulates component knowledge across sessions in `.claude/agent-memory/` |
 | **`user-invocable: false`** | `aem-project-conventions` skill — always-loaded team conventions applied silently on every task |
-| **`context: fork`** | `review.md` command — runs in a forked context so the full review doesn't pollute the main conversation |
-| **Agent teams** | `review.md` spawns 4 reviewer agents in parallel (security, performance, Cloud Manager, SonarCloud), each with its own isolated context, then merges findings |
+| **Agent teams** | `review.md` uses `TeamCreate` to spawn 4 native reviewer teammates in parallel (security, performance, Cloud Manager, SonarCloud), each with its own isolated context, then merges findings |
 | **`/batch`** | Documented in cheatsheet — bulk convention fixes, null-check additions, log statement migrations |
 | **`/loop`** | Documented in cheatsheet — Cloud Manager pipeline polling, test failure watching |
 | **Plan mode** | Documented in cheatsheet — read-only exploration before large refactors or filter changes |
