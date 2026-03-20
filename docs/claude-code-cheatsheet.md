@@ -3,7 +3,7 @@
 Five commands cover everything. Skills can be chained or run standalone.
 
 **Commands** (invoked as `/project:command-name`):
-- `/project:review` — comprehensive review — spawns security, performance, Cloud Manager, and SonarCloud reviewer agents in parallel, then consolidates findings
+- `/project:review` — comprehensive review — creates a native agent team with four specialist reviewers (security, performance, Cloud Manager, SonarCloud) running in parallel, then consolidates findings
 - `/project:create` — any AEM artifact, detects type automatically
 - `/project:explain` — component walkthrough or pipeline impact
 - `/project:pr` — PR summary with risks and test plan
@@ -362,6 +362,45 @@ Check if the Cloud Manager pipeline at [pipeline URL] has finished. If it has fa
 /loop 2m
 Run mvn test -pl core -q and report if any tests fail. Stop after the first clean run.
 ```
+
+---
+
+## LSP code intelligence (Java and TypeScript)
+
+LSP support is active when `jdtls-lsp` (Java) and `typescript-lsp` (TypeScript) plugins are installed and enabled in `.claude/settings.json`. Claude uses hover, go-to-definition, and diagnostics automatically when reading or editing code.
+
+### Test that LSP is active
+```
+What is the return type of SlingHttpServletRequest.getResource()?
+```
+*(If LSP is working, Claude uses `lsp_hover` — visible in tool calls. If it falls back to Grep/Read, jdtls is still indexing.)*
+
+### Go to definition
+```
+Where is ResourceResolverFactory defined and what does the getServiceResourceResolver method signature look like?
+```
+
+### Find all usages of a service
+```
+Find all places where ProductService is injected or used across the codebase.
+```
+
+### Check for compile errors before committing
+```
+Check core/src/main/java/com/example/models/ProductModel.java for any type errors or unresolved references.
+```
+
+### Inspect an interface before implementing it
+```
+Show me the full interface definition for WorkflowProcess so I can implement it correctly.
+```
+
+### Review a method signature before calling it
+```
+What parameters does QueryBuilder.createQuery() accept and what does it return?
+```
+
+> **Note:** jdtls indexes the Maven workspace on first run — this takes 3–5 minutes. During indexing, Claude falls back to Grep/Read. Once indexing is complete, `lsp_hover` and `lsp_get_document_symbols` appear in tool calls confirming LSP is active.
 
 ---
 

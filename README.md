@@ -230,7 +230,7 @@ Also sets project-wide environment variables (`AEM_HOST`, `AEM_PORT_AUTHOR`, `AE
 
 Adjust the lists to match your team's conventions. The defaults allow common Maven and git read commands, prompt for git write operations, and block destructive or credential-exposing operations.
 
-> **Skills:** `.claude/skills/` is the newer equivalent of `.claude/commands/` with additional frontmatter options (`context: fork`, `agent:`, supporting files). Both work for slash-command invocation. Migrate to `.claude/skills/` when you need subagent isolation or multi-file skill structure.
+> **Commands vs Skills:** Both are used in this repo and serve different purposes. **Commands** (`.claude/commands/project/`) are orchestration entry points invoked as `/project:<name>` (e.g. `/project:review`) — they coordinate agents and multi-step workflows. **Skills** (`.claude/skills/`) are focused, reusable domain tools invoked directly as `/<name>` (e.g. `/aem-security`) and support model overrides and auto-loading via `user-invocable: false`.
 
 ---
 
@@ -250,6 +250,92 @@ Adjust the lists to match your team's conventions. The defaults allow common Mav
 3. Keep entry-point commands slim in `.claude/commands/` — route and orchestrate, don't duplicate rule content
 4. Keep focused, reusable logic in `.claude/skills/` — individual skills can be chained by commands or invoked directly
 5. Adjust `settings.json` to reflect your team's trust boundaries
+
+---
+
+## LSP (Code intelligence)
+
+`jdtls-lsp` and `typescript-lsp` are enabled in `settings.json` as project-scoped plugins. When the language server binaries are on PATH, Claude gains:
+
+- **Real-time diagnostics** — type errors, missing imports, and syntax issues surfaced immediately after every edit
+- **Go to definition** — navigate to Sling API, JCR, OSGi, and project class definitions directly
+- **Find references** — trace usages of services, models, and interfaces across the codebase
+- **Type information** — hover type info for `@Model`, `@Component`, `@Reference` annotations
+
+### Install language server binaries
+
+**Java (jdtls) — required for `core/` module:**
+
+`jdtls` is not available via apt or brew — install it manually (same steps on Linux, macOS, and Windows):
+
+**Linux / macOS:**
+```bash
+# 1. Create directories
+mkdir -p ~/.local/share/jdtls ~/.cache/jdtls/workspace ~/.local/bin
+
+# 2. Download latest milestone from Eclipse
+curl -L -o /tmp/jdtls.tar.gz \
+  "https://download.eclipse.org/jdtls/milestones/1.57.0/jdt-language-server-1.57.0-202602261110.tar.gz"
+
+# 3. Extract
+tar -xzf /tmp/jdtls.tar.gz -C ~/.local/share/jdtls
+
+# 4. Symlink the launcher (ships with the package)
+ln -sf ~/.local/share/jdtls/bin/jdtls ~/.local/bin/jdtls
+
+# 5. Add to PATH (add to ~/.bashrc or ~/.zshrc)
+export PATH=$HOME/.local/bin:$PATH
+
+# 6. Verify
+which jdtls
+```
+
+**Windows:**
+```powershell
+# 1. Create directory
+New-Item -ItemType Directory -Force "$env:LOCALAPPDATA\jdtls"
+
+# 2. Download (update URL to latest milestone from https://download.eclipse.org/jdtls/milestones/)
+Invoke-WebRequest -Uri "https://download.eclipse.org/jdtls/milestones/1.57.0/jdt-language-server-1.57.0-202602261110.tar.gz" `
+  -OutFile "$env:TEMP\jdtls.tar.gz"
+
+# 3. Extract (requires tar, available on Windows 10+)
+tar -xzf "$env:TEMP\jdtls.tar.gz" -C "$env:LOCALAPPDATA\jdtls"
+
+# 4. Add to PATH — add this to your PowerShell profile or System Environment Variables:
+$env:PATH += ";$env:LOCALAPPDATA\jdtls\bin"
+```
+
+> jdtls ships with a `bin/jdtls` launcher script (Linux/macOS) and `bin/jdtls.bat` (Windows). No wrapper script needed — just add `bin/` to PATH.
+
+> **First-run note:** jdtls indexes the Maven workspace on startup. This takes 3–5 minutes on first launch. CPU will drop to ~0% when indexing is complete. Until then LSP diagnostics will not fire.
+
+**TypeScript — required for `ui.frontend*` modules:**
+
+```bash
+# Linux / macOS / Windows (via npm)
+npm install -g typescript-language-server typescript
+```
+
+### Install the plugins
+
+The plugins are pre-enabled in `settings.json`. On first session Claude Code will prompt you to install them, or install manually inside a Claude Code session:
+
+```
+/plugin install jdtls-lsp@claude-plugins-official
+/plugin install typescript-lsp@claude-plugins-official
+```
+
+Restart the Claude Code session after installing — no `/reload-plugins` needed when starting fresh. Check `/plugin` → **Errors** tab if a language server binary is not found on PATH.
+
+### Verify LSP is active
+
+Ask Claude a question about a project-specific method:
+```
+What is the return type of ProductCardImpl.getCtaLink()?
+```
+- **LSP active** — Claude uses `lsp_hover` or `lsp_definition` tool calls
+- **LSP not active** — Claude falls back to `Search` (grep)
 
 ---
 

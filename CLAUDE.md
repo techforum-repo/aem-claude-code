@@ -64,3 +64,4 @@ This repository contains an Adobe Experience Manager as a Cloud Service (AEMaaCS
 - **Hooks** — `.claude/hooks/guard-sensitive-files.py` blocks edits to credential files. Registered in `.claude/settings.json`.
 - **Permissions** — `.claude/settings.json` defines allow / ask / deny tiers for shell commands.
 - **Personal overrides** — `.claude/settings.local.json` (git-ignored) for per-developer permission additions.
+- **LSP** — `jdtls-lsp` and `typescript-lsp` plugins are enabled in `settings.json`. When the language server binaries are on PATH, Claude gets real-time diagnostics, go-to-definition, find references, and type information after every edit. Install binaries: `sudo apt install jdtls` (or see README) and `npm install -g typescript-language-server typescript`.
