@@ -11,6 +11,18 @@ Applies to all Java source files in `core`: Sling Models, OSGi services, servlet
 
 Three rules apply simultaneously to `core/src/main/**/*.java`: this file, `core-java-security.md`, and `core-java-performance.md`. When guidance overlaps, follow the strictest rule.
 
+## Java 21 features
+
+This project targets Java 21. Use these features in new and modified code:
+- **Records** — for immutable value objects (e.g. search result items, DTOs) instead of manual classes with constructors, getters, `equals`, and `hashCode`
+- **Pattern matching for `instanceof`** — `if (resource instanceof ValueMap vm)` instead of cast-after-check
+- **Text blocks** — for multi-line JCR-SQL2 queries and JSON templates
+- **Switch expressions** — `->` syntax instead of statement switches with `break`
+- **`var`** — for local variable type inference where the type is clear from context
+- **Sealed classes** — to restrict model or service hierarchies where arbitrary extension should be prevented
+
+Do not introduce Java 21 features into code that will not be compiled at Java 21 source level (`<maven.compiler.release>21</maven.compiler.release>` in `core/pom.xml`).
+
 ## Key rules
 - Prefer Sling Models for component-backed presentation logic and OSGi services for shared or reusable business logic.
 - Follow existing package structure, annotation style, injection patterns, and naming conventions used by nearby classes.
