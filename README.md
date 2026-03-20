@@ -139,6 +139,8 @@ Agents differ from skills: a skill runs inline in your conversation; an agent ge
 ### `.claude/hooks/`
 Shell scripts executed at Claude Code lifecycle events. Registered in `settings.json` under `"hooks"`.
 
+> **Prerequisite:** All hooks are Python scripts and require **Python 3** on PATH. Verify with `python3 --version`. Python 3 is pre-installed on macOS and most Linux distributions. On Windows, install from [python.org](https://www.python.org/downloads/) and ensure it is added to PATH during setup.
+
 Included hooks:
 - **`guard-sensitive-files.py`** (`PreToolUse`) — blocks Claude from editing files matching credential patterns (`.env`, `*secret*`, `*keystore*`). Written in Python for cross-platform compatibility. Add patterns to `SENSITIVE_PATTERNS` to match your project's naming conventions.
 - **`post-format.py`** (`PostToolUse`) — after Claude writes or edits a Java file in `core/`, automatically runs `mvn spotless:apply -pl core` to keep formatting consistent. Requires the [Spotless Maven plugin](https://github.com/diffplug/spotless) in `core/pom.xml` (see below). If your team uses a different formatter, see [Using a different formatter](#using-a-different-formatter).
