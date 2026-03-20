@@ -583,8 +583,8 @@ Ideas and opportunities not yet implemented — ready to pick up:
 - **`aem-accessibility/SKILL.md`** — On-demand `/aem-accessibility` skill for explicit WCAG 2.1 audits. The `accessibility.md` rule already auto-applies when editing HTL, dialogs, and frontend files, and accessibility is now a reviewer in `/project:review`; this skill would add a standalone targeted slash command.
 
 ### MCP servers
-- **AEM MCP server (Adobe)** — Adobe is developing an official MCP server for AEM that would let Claude query the JCR, inspect content structures, and trigger replication directly from the conversation. Once available, this would replace the current `AEM_HOST`/`AEM_PORT` env var approach for live instance interactions.
-- **Cloud Manager MCP server (Adobe)** — An official Cloud Manager MCP server would let Claude check pipeline status, read environment logs, and inspect deployment history without leaving the conversation. Pairs naturally with the `/project:pr` command and `/loop` polling pattern.
+- **AEM MCP server (Adobe)** — Enabling the official Adobe MCP server for AEM that would let Claude query the JCR, inspect content structures, and trigger replication directly from the conversation.
+- **Cloud Manager MCP server (Adobe)** — Enabling the official Cloud Manager MCP server would let Claude check pipeline status, read environment logs, and inspect deployment history without leaving the conversation. Pairs naturally with the `/project:pr` command and `/loop` polling pattern.
 
 ### Custom plugins
 - **`aem-sdk` plugin** — a custom Claude Code plugin that wraps AEM SDK tools as MCP tools, allowing Claude to invoke them directly from the conversation without shell hooks. Would cover: Dispatcher SDK validator, Oak run jar commands (compaction, check, explore), Content Package Manager API, and Felix console queries. Use `plugin-dev@claude-plugins-official` as a starting point.
