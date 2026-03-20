@@ -143,6 +143,18 @@ Included hooks:
 - **`guard-sensitive-files.py`** (`PreToolUse`) — blocks Claude from editing files matching credential patterns (`.env`, `*secret*`, `*keystore*`). Written in Python for cross-platform compatibility. Add patterns to `SENSITIVE_PATTERNS` to match your project's naming conventions.
 - **`post-format.py`** (`PostToolUse`) — after Claude writes or edits a Java file in `core/`, automatically runs `mvn spotless:apply -pl core` to keep formatting consistent. Requires the [Spotless Maven plugin](https://github.com/diffplug/spotless) in `core/pom.xml` (see below). If your team uses a different formatter, see [Using a different formatter](#using-a-different-formatter).
 
+- **`post-dispatcher-validate.py`** (`PostToolUse`) — after Claude writes or edits a Dispatcher config file (`.any`, `.conf`, `.rules`, `.vars`, `.farm` under `conf.dispatcher.d/` or `conf.d/`), automatically runs the [AEM Dispatcher SDK validator](https://experienceleague.adobe.com/docs/experience-manager-learn/cloud-service/local-development-environment-set-up/dispatcher-tools.html) to catch config errors immediately. Skips gracefully if the SDK validator is not installed.
+
+  **Where to install the validator:**
+  Download the Dispatcher Tools zip from the [AEM SDK](https://experience.adobe.com/#/downloads) and extract it. Either add the `bin/` directory to your PATH, or place the extracted folder at the standard fallback location:
+
+  | Platform | Binary name | Fallback location |
+  |---|---|---|
+  | Linux / macOS | `validate` | `~/aem-sdk/dispatcher/bin/validate` |
+  | Windows | `validator.exe` | `~/aem-sdk/dispatcher/bin/validator.exe` |
+
+  Keep the SDK outside the project so it is not committed to source control. On Windows, ensure the path contains no spaces or special characters.
+
 #### Setting up Spotless in `core/pom.xml`
 
 Add the following inside `<build><plugins>` in your `core/pom.xml`:

@@ -53,6 +53,10 @@
           {
             "type": "command",
             "command": "python3 .claude/hooks/post-format.py || python .claude/hooks/post-format.py"
+          },
+          {
+            "type": "command",
+            "command": "python3 .claude/hooks/post-dispatcher-validate.py || python .claude/hooks/post-dispatcher-validate.py"
           }
         ]
       }
