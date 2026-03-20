@@ -71,6 +71,7 @@ Claude Code automatically loads `CLAUDE.md`, `.claude/rules/*.md`, and `.claude/
 | `/aem-sonar` | Check SonarCloud quality before opening a PR |
 | `/aem-oak-index` | Review or create Oak indexes |
 | `/aem-headless` | Review CF models, GraphQL queries, CORS, and Dispatcher rules |
+| `/aem-accessibility` | WCAG 2.1 AA check — HTL, Coral UI dialogs, React/SPA components |
 
 ## Daily workflow
 

@@ -118,6 +118,7 @@ Focused, reusable skills. Invocable directly by name for quick targeted checks. 
 | `aem-sonar` | `/aem-sonar` | Complexity, duplication, resource leaks, SonarCloud security hotspots. Uses `model: haiku`. |
 | `aem-oak-index` | `/aem-oak-index` | Oak index type, property coverage, `evaluatePathRestrictions`, async config, index creation |
 | `aem-headless` | `/aem-headless` | CF model backward compatibility, GraphQL persisted queries, CF Java integration, CORS, Dispatcher rules |
+| `aem-accessibility` | `/aem-accessibility` | WCAG 2.1 AA — HTL templates, Coral UI dialogs, React/SPA components, focus management, ARIA usage |
 | `aem-project-conventions` | *(not user-invocable — auto-applied)* | Always-loaded team conventions: package naming, Sling Model patterns, HTL conventions, OSGi config placement, test structure |
 
 Run a single skill for a quick focused check before committing:
@@ -578,9 +579,6 @@ Create `.mcp.json` at the repository root. All team members pick it up automatic
 ## Future enhancements
 
 Ideas and opportunities not yet implemented — ready to pick up:
-
-### Skills
-- **`aem-accessibility/SKILL.md`** — On-demand `/aem-accessibility` skill for explicit WCAG 2.1 audits. The `accessibility.md` rule already auto-applies when editing HTL, dialogs, and frontend files, and accessibility is now a reviewer in `/project:review`; this skill would add a standalone targeted slash command.
 
 ### MCP servers
 - **AEM MCP server (Adobe)** — Enabling the official Adobe MCP server for AEM that would let Claude query the JCR, inspect content structures, and trigger replication directly from the conversation.
