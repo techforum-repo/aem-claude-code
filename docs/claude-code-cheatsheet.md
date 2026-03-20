@@ -145,6 +145,10 @@ OSGi EventHandler that listens for DAM asset ingestion events and triggers cache
 /project:create
 OSGi config for the product API service using Cloud Manager environment variable for the endpoint URL and a secret for the API key
 ```
+```
+/project:create
+Workflow process step that sends an email notification when a content page is activated
+```
 
 ---
 
@@ -186,6 +190,11 @@ Trace where this component or service is used and what could break if I change i
 ```
 *(runs `git diff main...HEAD` and `git log` automatically)*
 
+```
+/project:pr PROJ-1234
+```
+*(fetches the Jira ticket and aligns the PR summary with its acceptance criteria — requires the Atlassian plugin)*
+
 ### Draft testing notes
 ```
 Draft reviewer notes and testing notes for this change:
@@ -211,6 +220,11 @@ Summarize implementation risks, deployment impact, and rollback considerations f
 /project:bug
 The product card shows a blank title on publish but works on author. No errors in logs.
 ```
+```
+/project:bug PROJ-5678
+Product card shows blank title on publish but works on author.
+```
+*(fetches reproduction steps and comments from the Jira ticket before starting the investigation — requires the Atlassian plugin)*
 
 ### Compare two implementations
 ```
@@ -253,6 +267,27 @@ Review this file for null safety, exception handling, deeply nested logic, and t
 Review this change and tell me what unit tests or integration tests are missing:
 [file or folder path]
 ```
+
+### Accessibility review
+
+The `accessibility.md` rule activates automatically when editing HTL, dialogs, or frontend files. For an explicit audit of an existing component:
+
+```
+Review this component for WCAG 2.1 accessibility issues — HTL aria attributes, dialog field labels, heading structure, and keyboard navigation:
+ui.apps/src/main/content/jcr_root/apps/myproject/components/product-card
+```
+
+```
+Check the dialog for this component for missing fieldLabel, fieldDescription, and any fields that could cause authoring accessibility issues:
+ui.apps/src/main/content/jcr_root/apps/myproject/components/product-card/_cq_dialog/.content.xml
+```
+
+```
+Review this React component for accessible modal behavior — focus trapping, ARIA roles, and keyboard support:
+ui.frontend.react/src/components/ProductCard/ProductCard.tsx
+```
+
+---
 
 ### pr-review-toolkit agents (auto-triggered, no command needed)
 
@@ -332,7 +367,7 @@ Review this OSGi config for correct runmode folder, PID filename, and hardcoded 
 
 ---
 
-## Understanding and onboarding
+## Exploration and refactoring
 
 ### Onboard to an area of the codebase
 ```

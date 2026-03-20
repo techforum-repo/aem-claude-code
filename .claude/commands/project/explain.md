@@ -2,6 +2,7 @@
 description: Explain an AEM component across all modules, or analyse the Cloud Manager pipeline impact of current changes
 allowed-tools: Read, Grep, Glob, Bash(git diff *), Bash(git diff), Bash(git log *)
 argument-hint: "[component path or class name, or leave blank for pipeline impact of current changes]"
+disable-model-invocation: true
 ---
 
 Explain: $ARGUMENTS

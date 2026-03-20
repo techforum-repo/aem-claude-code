@@ -47,7 +47,7 @@ def find_validator():
     is_windows = sys.platform == "win32"
 
     # Check PATH
-    for name in (["validator.exe", "validate.cmd"] if is_windows else ["validate"]):
+    for name in (["validator.exe"] if is_windows else ["validate"]):
         found = shutil.which(name)
         if found:
             return found

@@ -2,6 +2,7 @@
 description: Investigate an AEM bug — trace the cause across Sling Models, OSGi services, HTL, and content
 allowed-tools: Read, Grep, Glob, Bash(git log *), Bash(git log --oneline *)
 argument-hint: "[bug description or Jira/GitHub/Bitbucket issue reference — include what was expected, what happened, which environment]"
+disable-model-invocation: true
 ---
 
 Investigate: $ARGUMENTS

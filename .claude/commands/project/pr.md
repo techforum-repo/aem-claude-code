@@ -2,6 +2,7 @@
 description: Draft a pull request summary with modules changed, risks, and test plan
 allowed-tools: Read, Bash(git diff *), Bash(git diff), Bash(git log *), Bash(git status)
 argument-hint: "[base branch or issue/ticket reference — e.g. 'main', 'PROJ-123', 'github.com/org/repo/issues/42']"
+disable-model-invocation: true
 ---
 
 Draft a pull request summary for the current changes.

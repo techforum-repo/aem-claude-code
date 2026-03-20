@@ -20,7 +20,7 @@ CLAUDE.md  →  <project-root>/CLAUDE.md
 2. `CLAUDE.md` — update the **Java version** section if your project is not on Java 21 (also update `.claude/rules/core-java.md`)
 3. `.claude/settings.json` — set `AEM_HOST`, ports, and any additional Maven profiles to allow
 4. `.claude/skills/aem-project-conventions/SKILL.md` — replace `com.example` with your org/project package names; update OSGi config path with your project name — this is the most impactful customisation for code generation quality
-5. `.mcp.json` — swap GitHub for Bitbucket if needed; add Jira MCP if your team uses it
+5. `.mcp.json` — swap GitHub for Bitbucket if needed (Jira is handled by the `atlassian` plugin — no `.mcp.json` entry needed)
 6. Add `.claude/settings.local.json` to `.gitignore` for personal permission overrides
 7. Optionally commit `.claude/agent-memory/` to share accumulated agent knowledge across the team
 
@@ -63,6 +63,7 @@ Scoped instruction files applied automatically when Claude reads or edits files 
 | `caconfig.md` | `ui.content/**/sling:configs/**/*.xml`, CAConfig Java interfaces |
 | `i18n.md` | `ui.apps/**/i18n/**/*.json`, `ui.apps/**/i18n/**/*.xml` |
 | `integration-tests.md` | `it.tests/src/**/*.java`, `ui.tests/src/**/*.java`, `ui.tests/src/**/*.ts` |
+| `accessibility.md` | `ui.apps/**/*.{html,xml}`, `ui.frontend*/**/*.{js,ts,jsx,tsx}` |
 
 ---
 
@@ -108,7 +109,7 @@ The product card shows a blank title on publish but works on author.
 ```
 
 ### `.claude/skills/`
-Focused, reusable skills. Invocable directly by name for quick targeted checks. `/project:review` uses dedicated reviewer agents instead — skills are the lightweight option when you only need one domain checked.
+Focused, reusable skills. Invocable directly by name for quick targeted checks. `/project:review` uses inline `TeamCreate` teammates for parallel review — skills are the lightweight option when you only need one domain checked.
 
 | Skill | Direct invocation | What it checks |
 |---|---|---|
@@ -136,10 +137,8 @@ Custom subagents with their own isolated context window, tool allowlist, and mod
 |---|---|
 | `aem-inspector` | Whenever `/project:explain` is called with a component path or class name. Uses `model: opusplan` (Opus for planning, Sonnet for execution) and `memory: project` to accumulate component knowledge across sessions. |
 | `aem-refactor` | When asked to refactor, rename, or restructure AEM code. Runs in an isolated git worktree (`isolation: worktree`) — your branch is unchanged until you merge. Uses `memory: project` to remember naming conventions and structural decisions across sessions. |
-| `aem-security-reviewer` | Spawned in parallel by `/project:review` — security domain (admin resolver, query injection, path validation, hardcoded secrets). |
-| `aem-performance-reviewer` | Spawned in parallel by `/project:review` — performance domain (JCR queries, traversal, resolver lifecycle, threading). |
-| `aem-cloudmanager-reviewer` | Spawned in parallel by `/project:review` — Cloud Manager domain (OakPAL, embed order, Dispatcher SDK, deployment safety). |
-| `aem-sonar-reviewer` | Spawned in parallel by `/project:review` — code quality domain (complexity, duplication, resource leaks). Uses `model: haiku`. |
+
+The five reviewer teammates spawned by `/project:review` are defined as inline prompts inside `review.md` — they run as native `TeamCreate` teammates, not as agent files.
 
 Agents differ from skills: a skill runs inline in your conversation; an agent gets a fresh isolated context, runs to completion, and returns a summary. Use agents for deep multi-file analysis tasks that would otherwise pollute the main conversation with file contents.
 
@@ -264,16 +263,6 @@ Adjust the lists to match your team's conventions. The defaults allow common Mav
 
 ---
 
-## Recommended usage model
-
-1. Keep broad standards in `CLAUDE.md`
-2. Keep module-specific, path-scoped guidance in `.claude/rules/`
-3. Keep entry-point commands slim in `.claude/commands/` — route and orchestrate, don't duplicate rule content
-4. Keep focused, reusable logic in `.claude/skills/` — individual skills can be chained by commands or invoked directly
-5. Adjust `settings.json` to reflect your team's trust boundaries
-
----
-
 ## LSP (Code intelligence)
 
 `jdtls-lsp` and `typescript-lsp` are enabled in `settings.json` as project-scoped plugins. When the language server binaries are on PATH, Claude gains:
@@ -344,15 +333,52 @@ npm install -g typescript-language-server typescript
 
 ### Install the plugins
 
-Three plugins are pre-enabled in `settings.json`. On first session Claude Code will prompt you to install them, or install manually inside a Claude Code session:
+Four plugins are pre-enabled in `settings.json`. On first session Claude Code will prompt you to install them, or install manually inside a Claude Code session:
 
 ```
 /plugin install jdtls-lsp@claude-plugins-official
 /plugin install typescript-lsp@claude-plugins-official
 /plugin install pr-review-toolkit@claude-plugins-official
+/plugin install atlassian@claude-plugins-official
 ```
 
-The `pr-review-toolkit` adds six general-purpose review agents (comment quality, test coverage, silent failures, type design, general code review, complexity). These complement `/project:review` which focuses on AEM-specific concerns — both run independently.
+| Plugin | Purpose |
+|---|---|
+| `jdtls-lsp` | Java LSP — real-time diagnostics, go-to-definition, type info for `core/` |
+| `typescript-lsp` | TypeScript LSP — diagnostics and navigation for `ui.frontend*` modules |
+| `pr-review-toolkit` | General PR review agents — comment accuracy, test coverage, silent failures, type design |
+| `atlassian` | Jira + Confluence MCP — `/project:bug` and `/project:pr` fetch ticket context automatically |
+
+> If your team does not use Jira/Confluence, remove `atlassian` from `enabledPlugins` in `settings.json`.
+
+#### Configuring the Atlassian plugin
+
+Each developer connects with their own credentials via `.claude/settings.local.json` (git-ignored — never commit credentials):
+
+```json
+{
+  "env": {
+    "JIRA_URL": "https://your-domain.atlassian.net",
+    "JIRA_USERNAME": "your-email@company.com",
+    "JIRA_API_TOKEN": "your_api_token"
+  }
+}
+```
+
+Generate an API token at [id.atlassian.com/manage/api-tokens](https://id.atlassian.com/manage/api-tokens). Supports Jira Cloud, Server, and Data Center (requires standard REST API access).
+
+**How it is used:**
+
+```
+/project:pr PROJ-1234
+```
+Fetches the ticket requirements and aligns the PR summary with acceptance criteria.
+
+```
+/project:bug PROJ-5678
+Product card shows blank title on publish but works on author.
+```
+Fetches reproduction steps and comments from the ticket before starting the investigation.
 
 Restart the Claude Code session after installing — no `/reload-plugins` needed when starting fresh. Check `/plugin` → **Errors** tab if a language server binary is not found on PATH.
 
@@ -400,20 +426,9 @@ What is the return type of ProductCardImpl.getCtaLink()?
 
 ### Issue tracker — Jira (recommended for AEM enterprise teams)
 
-```json
-"jira": {
-  "type": "stdio",
-  "command": "npx",
-  "args": ["-y", "mcp-atlassian"],
-  "env": {
-    "JIRA_URL": "${JIRA_URL}",
-    "JIRA_USERNAME": "${JIRA_USERNAME}",
-    "JIRA_API_TOKEN": "${JIRA_API_TOKEN}"
-  }
-}
-```
+Jira is handled by the `atlassian@claude-plugins-official` plugin — no `.mcp.json` entry needed. See [Configuring the Atlassian plugin](#configuring-the-atlassian-plugin) for credential setup.
 
-With Jira configured, `/project:pr PROJ-123` fetches the ticket requirements and aligns the PR summary with the acceptance criteria. `/project:bug PROJ-456` fetches reproduction steps and comments before starting the investigation.
+Once configured, `/project:pr PROJ-123` fetches ticket requirements and aligns the PR summary with acceptance criteria. `/project:bug PROJ-456` fetches reproduction steps and comments before starting the investigation.
 
 ### Other useful MCP servers
 
@@ -439,7 +454,7 @@ claude mcp add --scope local my-server -- npx -y some-mcp-package
 | **`isolation: worktree`** | `aem-refactor` agent — refactoring runs in an isolated git copy, branch is safe until merged |
 | **`memory: project`** | `aem-inspector` agent — accumulates component knowledge across sessions in `.claude/agent-memory/` |
 | **`user-invocable: false`** | `aem-project-conventions` skill — always-loaded team conventions applied silently on every task |
-| **Agent teams** | `review.md` uses `TeamCreate` to spawn 4 native reviewer teammates in parallel (security, performance, Cloud Manager, SonarCloud), each with its own isolated context, then merges findings |
+| **Agent teams** | `review.md` uses `TeamCreate` to spawn 5 native reviewer teammates in parallel (security, performance, Cloud Manager, SonarCloud, maintainability), each with its own isolated context, then merges findings |
 | **`/batch`** | Documented in cheatsheet — bulk convention fixes, null-check additions, log statement migrations |
 | **`/loop`** | Documented in cheatsheet — Cloud Manager pipeline polling, test failure watching |
 | **Plan mode** | Documented in cheatsheet — read-only exploration before large refactors or filter changes |
@@ -447,6 +462,9 @@ claude mcp add --scope local my-server -- npx -y some-mcp-package
 ---
 
 ## Extending this repository
+
+**Design principles:** broad standards belong in `CLAUDE.md`; module-specific guidance belongs in `.claude/rules/` with `paths:` scoping; commands in `.claude/commands/` should route and orchestrate, not duplicate rule content; skills in `.claude/skills/` stay focused and reusable; `settings.json` reflects your team's trust boundaries.
+
 
 ### Add a scoped rule
 Create `.claude/rules/<topic>.md` with `paths:` frontmatter. Claude applies it automatically when matching files are read or edited. No registration needed.
@@ -481,7 +499,7 @@ Audit the component at $ARGUMENTS for accessibility:
 ```
 
 ### Add a new skill
-Create `.claude/skills/<skill-name>/SKILL.md`. The skill is immediately invocable as `/<skill-name>` for targeted checks. To include it in full reviews, also create a corresponding reviewer agent in `.claude/agents/` and reference it in `review.md`.
+Create `.claude/skills/<skill-name>/SKILL.md`. The skill is immediately invocable as `/<skill-name>` for targeted checks. To include it in full reviews, add a new teammate block to `review.md` with the relevant prompt.
 
 ```markdown
 ---
@@ -530,12 +548,15 @@ Create `.mcp.json` at the repository root. All team members pick it up automatic
 Ideas and opportunities not yet implemented — ready to pick up:
 
 ### Skills
-- **`aem-accessibility/SKILL.md`** — WCAG 2.1 HTL review against common AEM accessibility patterns
+- **`aem-accessibility/SKILL.md`** — On-demand `/aem-accessibility` skill for explicit WCAG 2.1 audits. The `accessibility.md` rule already auto-applies when editing HTL, dialogs, and frontend files; this skill would add a targeted slash command for auditing existing components without editing them.
 - **`aem-multisite/SKILL.md`** — Multi-site Manager, language copy, and Live Copy inheritance chain rules
 
 ### MCP servers
 - **AEM MCP server (Adobe)** — Adobe is developing an official MCP server for AEM that would let Claude query the JCR, inspect content structures, and trigger replication directly from the conversation. Once available, this would replace the current `AEM_HOST`/`AEM_PORT` env var approach for live instance interactions.
 - **Cloud Manager MCP server (Adobe)** — An official Cloud Manager MCP server would let Claude check pipeline status, read environment logs, and inspect deployment history without leaving the conversation. Pairs naturally with the `/project:pr` command and `/loop` polling pattern.
+
+### Custom plugins
+- **`aem-sdk` plugin** — a custom Claude Code plugin that wraps AEM SDK tools as MCP tools, allowing Claude to invoke them directly from the conversation without shell hooks. Would cover: Dispatcher SDK validator, Oak run jar commands (compaction, check, explore), Content Package Manager API, and Felix console queries. Use `plugin-dev@claude-plugins-official` as a starting point.
 
 ### Broader
 - Refine commands based on real team usage patterns

@@ -1,7 +1,7 @@
 ---
 description: Create any AEM artifact — component, Sling Model, OSGi service, servlet, scheduler, workflow step, Repoinit, Oak index, Content Fragment model, CAConfig, Dispatcher config, i18n keys, unit test, or frontend code
 disable-model-invocation: true
-allowed-tools: Read, Grep, Glob, Write, Edit, Bash(mvn *), Bash(mvn clean*)
+allowed-tools: Read, Grep, Glob, Write, Edit, Bash(mvn *)
 argument-hint: "[artifact type and description, e.g. 'Sling Model for product card']"
 ---
 

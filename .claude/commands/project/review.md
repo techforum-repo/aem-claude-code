@@ -1,7 +1,8 @@
 ---
 description: Comprehensive AEM code review — spawns a five-teammate agent team (security, performance, Cloud Manager, SonarCloud, maintainability) in parallel, then consolidates all findings into one report
-allowed-tools: Read, Grep, Glob, Bash(git diff *), Bash(git diff), Bash(git status), Bash(git log *), TeamCreate, TaskCreate, TaskUpdate, SendMessage
+allowed-tools: Read, Grep, Glob, Bash(git diff *), Bash(git diff), Bash(git status), Bash(git log *), TeamCreate, SendMessage
 argument-hint: "[file or class path, or leave blank to review current branch diff]"
+disable-model-invocation: true
 ---
 
 Review target: $ARGUMENTS
@@ -12,7 +13,7 @@ If no path is provided, run `git diff` to identify what changed in the current b
 
 **Use the agent teams feature** to create a team with exactly five teammates. Do not use subagents or the Agent tool — use `TeamCreate` to spawn real teammates that share a task list and can message each other directly.
 
-Create the team with these four teammates:
+Create the team with these five teammates:
 
 **teammate: security-reviewer**
 Prompt: Review $ARGUMENTS for AEM security issues. Focus on: admin resolver usage, query injection from user input, unvalidated path input, hardcoded secrets, servlet exposure, missing XSSAPI output encoding. Report every finding as Blocking / Warning / Suggestion with file and line reference.
@@ -24,10 +25,10 @@ Prompt: Review $ARGUMENTS for AEM performance issues. Focus on: JCR queries (ind
 Prompt: Review $ARGUMENTS for AEM Cloud Manager and OakPAL issues. Focus on: ui.apps immutability, OSGi config in ui.config, package filter correctness, embed order in all/, Dispatcher SDK compatibility, Repoinit safety, deployment blockers. Report every finding as Blocking / Warning / Suggestion with file and line reference.
 
 **teammate: sonar-reviewer**
-Prompt: Review $ARGUMENTS for AEM code quality issues. Focus on: cyclomatic complexity, code duplication, null safety, unclosed resource leaks, SonarCloud security hotspots. Also check: silent failures (empty catch blocks, swallowed exceptions, missing log statements on error paths), and test coverage gaps (missing null input tests, untested edge cases, assertions that only verify happy path). Report every finding as Blocking / Warning / Suggestion with file and line reference.
+Prompt: Review $ARGUMENTS for AEM code quality issues. Focus on: cyclomatic complexity, code duplication, null safety, unclosed resource leaks, SonarCloud security hotspots. Report every finding as Blocking / Warning / Suggestion with file and line reference.
 
 **teammate: maintainability-reviewer**
-Prompt: Review $ARGUMENTS for long-term maintainability. Focus on: (1) comment accuracy — are Javadoc and inline comments accurate and consistent with the actual code behaviour, or are they stale/misleading? (2) type design — are types well encapsulated with strong invariants, or do they expose unnecessary internals? (3) code simplification — is there unnecessary complexity, duplicated logic, or opportunities to simplify without changing behaviour? Report every finding as Blocking / Warning / Suggestion with file and line reference.
+Prompt: Review $ARGUMENTS for long-term maintainability. Focus on: (1) comment accuracy — are Javadoc and inline comments accurate and consistent with the actual code behaviour, or are they stale/misleading? (2) type design — are types well encapsulated with strong invariants, or do they expose unnecessary internals? (3) code simplification — is there unnecessary complexity or opportunities to simplify without changing behaviour? Report every finding as Blocking / Warning / Suggestion with file and line reference.
 
 Teammates should message each other when a finding in one domain has implications for another (e.g. security finding that is also a performance risk).
 
@@ -42,7 +43,7 @@ While teammates are running, perform these checks in the lead context:
 
 ## Step 3 — Wait for all teammates to finish, then consolidate
 
-Once all four teammates have reported back, merge their findings with the inline checks into one report:
+Once all five teammates have reported back, merge their findings with the inline checks into one report:
 
 1. **Summary** — what was reviewed and scope
 2. **All findings** — consolidated and deduplicated, labelled **Blocking** / **Warning** / **Suggestion**, grouped by domain (Security / Performance / Cloud Manager / Quality / Maintainability / Structure)
