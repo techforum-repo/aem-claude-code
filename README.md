@@ -496,15 +496,21 @@ Create `.mcp.json` at the repository root. All team members pick it up automatic
 }
 ```
 
-### Future skill patterns (not yet implemented, ready to add)
-- **`aem-accessibility/SKILL.md`** — WCAG 2.1 HTL review
-- **`aem-multisite/SKILL.md`** — Multi-site Manager and inheritance chain rules
-
 ---
 
-## Suggested next steps
+## Future enhancements
 
+Ideas and opportunities not yet implemented — ready to pick up:
+
+### Skills
+- **`aem-accessibility/SKILL.md`** — WCAG 2.1 HTL review against common AEM accessibility patterns
+- **`aem-multisite/SKILL.md`** — Multi-site Manager, language copy, and Live Copy inheritance chain rules
+
+### MCP servers
+- **AEM MCP server (Adobe)** — Adobe is developing an official MCP server for AEM that would let Claude query the JCR, inspect content structures, and trigger replication directly from the conversation. Once available, this would replace the current `AEM_HOST`/`AEM_PORT` env var approach for live instance interactions.
+- **Cloud Manager MCP server (Adobe)** — An official Cloud Manager MCP server would let Claude check pipeline status, read environment logs, and inspect deployment history without leaving the conversation. Pairs naturally with the `/project:pr` command and `/loop` polling pattern.
+
+### Broader
 - Refine commands based on real team usage patterns
 - Add project-specific rules for custom base components or internal utility libraries
 - Expand `settings.json` with additional safe Maven profiles for your project
-- Add `.mcp.json` at the repo root for team-shared MCP servers (GitHub, Jira, Slack, etc.)
