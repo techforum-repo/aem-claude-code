@@ -18,6 +18,11 @@ import shutil
 import subprocess
 import sys
 
+
+def respond(decision, reason):
+    print(json.dumps({"decision": decision, "reason": reason}))
+    sys.exit(0)
+
 # Dispatcher config file extensions that trigger validation
 DISPATCHER_EXTENSIONS = (".any", ".conf", ".rules", ".vars", ".farm", ".vhost")
 
@@ -143,25 +148,14 @@ def main():
             env={**os.environ},
         )
         if result.returncode == 0:
-            print(f"[post-dispatcher-validate] Validation passed for {file_path}", file=sys.stderr)
+            respond("approve", f"Dispatcher validation passed for {file_path}")
         else:
             output = (result.stdout + result.stderr).strip()
-            print(
-                f"[post-dispatcher-validate] Validation FAILED for {file_path}:\n{output}",
-                file=sys.stderr,
-            )
+            respond("block", f"Dispatcher validation FAILED for {file_path}:\n{output}")
     except FileNotFoundError:
-        print(
-            f"[post-dispatcher-validate] Validator binary not executable — skipping for {file_path}",
-            file=sys.stderr,
-        )
+        respond("approve", f"Validator binary not executable — skipping for {file_path}")
     except subprocess.TimeoutExpired:
-        print(
-            f"[post-dispatcher-validate] Validator timed out for {file_path} — skipping",
-            file=sys.stderr,
-        )
-
-    sys.exit(0)
+        respond("approve", f"Validator timed out — skipping for {file_path}")
 
 
 if __name__ == "__main__":

@@ -51,12 +51,14 @@ def main():
     effective_host = host if host is not None else DEFAULT_HOST
 
     if effective_host.lower() not in LOCALHOST_VALUES:
-        print(
-            f"Blocked: Maven autoInstall targeting '{effective_host}' (non-localhost).\n"
-            f"Claude may only deploy to localhost. Run this command manually if intentional:\n"
-            f"  {command}",
-            file=sys.stderr,
-        )
+        print(json.dumps({
+            "decision": "block",
+            "reason": (
+                f"Blocked: Maven autoInstall targeting '{effective_host}' (non-localhost).\n"
+                f"Claude may only deploy to localhost. Run this command manually if intentional:\n"
+                f"  {command}"
+            ),
+        }))
         sys.exit(2)
 
     sys.exit(0)

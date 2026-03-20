@@ -51,7 +51,6 @@ def main():
     # Works on Windows (mvn.cmd), Linux, and macOS as long as mvn is on PATH
     mvn_cmd = shutil.which("mvn") or shutil.which("mvn.cmd")
     if not mvn_cmd:
-        print(f"[post-format] mvn not found on PATH — skipping Spotless for {file_path}", file=sys.stderr)
         sys.exit(0)
 
     try:
@@ -65,13 +64,13 @@ def main():
             env={**os.environ}
         )
         if result.returncode == 0:
-            print(f"[post-format] Spotless applied to {file_path}")
+            print(json.dumps({"decision": "approve", "reason": f"Spotless applied to {file_path}"}))
         else:
-            print(f"[post-format] Spotless failed for {file_path}:\n{result.stderr}", file=sys.stderr)
+            print(json.dumps({"decision": "block", "reason": f"Spotless failed for {file_path}:\n{result.stderr}"}))
     except FileNotFoundError:
-        print(f"[post-format] mvn not found on PATH — skipping Spotless for {file_path}", file=sys.stderr)
+        sys.exit(0)
     except subprocess.TimeoutExpired:
-        print(f"[post-format] Spotless timed out for {file_path} — skipping", file=sys.stderr)
+        sys.exit(0)
 
     sys.exit(0)
 

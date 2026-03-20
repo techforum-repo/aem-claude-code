@@ -30,11 +30,10 @@ SENSITIVE_PATTERNS = [
 
 for pattern in SENSITIVE_PATTERNS:
     if pattern in name:
-        print(
-            f"Blocked: '{file_path}' matches a sensitive file pattern ('{pattern}'). "
-            "Edit it manually if this is intentional.",
-            file=sys.stderr,
-        )
+        print(json.dumps({
+            "decision": "block",
+            "reason": f"Blocked: '{file_path}' matches a sensitive file pattern ('{pattern}'). Edit it manually if this is intentional.",
+        }))
         sys.exit(2)
 
 sys.exit(0)
