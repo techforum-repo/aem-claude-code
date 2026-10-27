@@ -1,3 +1,6 @@
+> [!IMPORTANT]
+> **This repository has moved to [techforum-repo/aem-ai-kit](https://github.com/techforum-repo/aem-ai-kit)** and is archived. The Claude Code and GitHub Copilot setups now live together there, generated from one set of rules. Install with `python3 scripts/install.py <aem-project-root> claude`.
+
 # AEM Claude Code Guidance
 
 Reusable Claude Code configuration for an enterprise Adobe Experience Manager as a Cloud Service (AEMaaCS) project. Works on **Windows, Linux, and macOS** via the VS Code extension or CLI.
